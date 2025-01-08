@@ -1,0 +1,53 @@
+{
+    "name": "authorization",
+    "version": "1.0.0",
+    "license": "Apache-2.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite --force",
+        "build": "vite build && esno ./src/utils/build.ts",
+        "lint": "eslint --ext .js,.jsx,.ts,.vue src",
+        "lint-fix": "eslint --ext .js,.jsx,.ts,.vue src --fix",
+        "format": "npx prettier --write ."
+    },
+    "dependencies": {
+        "@element-plus/icons-vue": "2.3.1",
+        "@vueuse/core": "10.7.0",
+        "axios": "1.6.2",
+        "countup.js": "2.8.0",
+        "echarts": "5.4.3",
+        "element-plus": "2.4.4",
+        "esno": "4.0.0",
+        "font-awesome": "^4.7.0",
+        "lodash-es": "4.17.21",
+        "mitt": "3.0.1",
+        "nprogress": "0.2.0",
+        "pinia": "2.1.7",
+        "pinia-plugin-persistedstate": "3.2.1",
+        "screenfull": "6.0.2",
+        "sortablejs": "1.15.1",
+        "v-code-diff": "1.8.0",
+        "vue": "3.3.13",
+        "vue-i18n": "9.2.2",
+        "vue-qr": "4.0.9",
+        "vue-router": "4.2.5"
+    },
+    "devDependencies": {
+        "@types/lodash-es": "4.17.12",
+        "@types/node": "20.10.5",
+        "@types/nprogress": "0.2.3",
+        "@types/sortablejs": "1.15.7",
+        "@typescript-eslint/eslint-plugin": "6.15.0",
+        "@typescript-eslint/parser": "6.15.0",
+        "@vitejs/plugin-vue": "4.5.2",
+        "async-validator": "4.2.5",
+        "eslint": "8.56.0",
+        "eslint-config-prettier": "9.1.0",
+        "eslint-plugin-vue": "9.19.2",
+        "prettier": "3.1.1",
+        "sass": "1.69.5",
+        "typescript": "5.3.3",
+        "vite": "^5.2.11",
+        "vue-eslint-parser": "9.3.2"
+    }
+}
