@@ -43,7 +43,7 @@ function createAxios<Data = any, T = ApiPromise<Data>>(axiosConfig: AxiosRequest
     const adminInfo = useAdminInfo()
 
     const Axios = axios.create({
-        baseURL: getUrl() + '/api/',
+        baseURL: getUrl() + '/',
         timeout: 1000 * 10,
         headers: {
             // 'think-lang': config.lang.defaultLang,

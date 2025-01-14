@@ -13,6 +13,7 @@
     "dependencies": {
         "@element-plus/icons-vue": "2.3.1",
         "@vueuse/core": "10.7.0",
+        "authorization": "file:",
         "axios": "1.6.2",
         "countup.js": "2.8.0",
         "echarts": "5.4.3",
@@ -47,7 +48,7 @@
         "prettier": "3.1.1",
         "sass": "1.69.5",
         "typescript": "5.3.3",
-        "vite": "^5.2.11",
+        "vite": "^6.0.7",
         "vue-eslint-parser": "9.3.2"
     }
 }
