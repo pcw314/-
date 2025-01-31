@@ -1,15 +1,15 @@
 package api
 
 import (
-	"gitee.com/xygfm/authorization/apps/admin"
+	"gitee.com/xygfm/authorization/apps/template"
 	"gitee.com/xygfm/authorization/ioc"
-	service "gitee.com/xygfm/authorization/middleware"
+	"gitee.com/xygfm/authorization/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 type handler struct {
 	ioc.ObjectImpl
-	svc admin.Service
+	svc template.Service
 }
 
 func init() {
@@ -20,21 +20,17 @@ func init() {
 }
 
 func (h *handler) Init() error {
-	h.svc = ioc.GetControllerObject(admin.AppName).(admin.Service)
+	h.svc = ioc.GetControllerObject(template.AppName).(template.Service)
 	return nil
 }
 
 func (h *handler) Name() string {
-	return admin.AppName
+	return template.AppName
 }
 
 func (h *handler) RegisterRoute(r gin.IRouter) error {
 	// 登录不进行任何中间件校验
-	r.POST("/register", h.Register)
-	r.POST("/login", h.Login)
 	r.Use(service.Security())
-	r.POST("/logout", h.Logout)
-	r.GET("/menu", h.ListMenu)
-	r.GET("/area/:id", h.ListArea)
+	r.GET("/list", h.List)
 	return nil
 }

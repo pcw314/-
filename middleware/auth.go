@@ -1,23 +1,20 @@
 package service
 
 import (
-	"fmt"
 	"gitee.com/xygfm/authorization/response"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func Security() gin.HandlerFunc {
-
 	return func(ctx *gin.Context) {
-		fmt.Println("sfghskjhagfkjasfskbhdbxcxbcnabdsjad===========")
 		claims, err := ParseToken(ctx.GetHeader("Authorization"))
 		if err != nil {
 			response.Fail(ctx, http.StatusUnauthorized, "Token校验失败")
 			ctx.Abort()
 			return
 		}
-		fmt.Println("claims:", claims)
+		ctx.Set("claims", claims)
 		ctx.Next()
 		return
 	}

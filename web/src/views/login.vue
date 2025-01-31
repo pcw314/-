@@ -50,6 +50,21 @@
                                     </template>
                                 </el-input>
                             </el-form-item>
+                            <el-form-item prop="role">
+                                <el-select
+        ref="roleRef"
+        v-model="form.role"
+        :placeholder="t('请选择身份')"
+        class="w-full"
+    >
+        <el-option
+            v-for="item in roleOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+        />
+    </el-select>
+                            </el-form-item>
                             <el-checkbox v-model="form.keep" :label="t('login.Hold session')" size="default"></el-checkbox>
                             <el-form-item>
                                 <el-button
@@ -86,27 +101,55 @@ import router from '/@/router'
 import clickCaptcha from '/@/components/clickCaptcha'
 import toggleDark from '/@/utils/useDark'
 import { baseRoutePath } from '/@/router/static/base'
+
+// 定义定时器变量
 let timer: number
 
+// 获取配置和管理员信息的store
 const config = useConfig()
 const adminInfo = useAdminInfo()
+// 设置深色/浅色模式
 toggleDark(config.layout.isDark)
 
+// 表单和输入框的引用
 const formRef = ref<FormInstance>()
 const usernameRef = ref<InputInstance>()
 const passwordRef = ref<InputInstance>()
+const roleRef = ref<InputInstance>()
+
+// 组件状态
 const state = reactive({
-    showCaptcha: false,
-    submitLoading: false,
+    showCaptcha: false,         // 是否显示验证码
+    submitLoading: false,       // 提交按钮加载状态
 })
+// 角色选项
+const roleOptions = [
+    {
+        value: 1,
+        label: '学生'
+    },
+    {
+        value: 2,
+        label: '企业'
+    },
+    {
+        value: 3,
+        label: '员工'
+    },
+    // 可以根据需要添加更多角色
+]
+
+// 表单数据
 const form = reactive({
-    username: '',
-    password: '',
-    keep: false,
-    captchaId: uuid(),
-    captchaInfo: '',
+    username: '',              // 用户名
+    password: '',             // 密码
+    keep: false,              // 是否记住登录状态
+    captchaId: uuid(),        // 验证码ID
+    captchaInfo: '',          // 验证码信息
+    role: '',
 })
 
+// 国际化
 const { t } = useI18n()
 
 // 表单验证规则
@@ -115,20 +158,24 @@ const rules = reactive({
     password: [buildValidatorData({ name: 'required', message: t('login.Please input a password') })],
 })
 
+// 组件挂载时初始化页面气泡效果
 onMounted(() => {
     timer = window.setTimeout(() => {
         pageBubble.init()
     }, 1000)
 })
 
+// 组件卸载前清理定时器和事件监听
 onBeforeUnmount(() => {
     clearTimeout(timer)
     pageBubble.removeListeners()
 })
 
+// 提交前的验证处理
 const onSubmitPre = () => {
     formRef.value?.validate((valid) => {
         if (valid) {
+            // 如果需要验证码，则显示验证码组件
             if (state.showCaptcha) {
                 clickCaptcha(form.captchaId, (captchaInfo: string) => onSubmit(captchaInfo))
             } else {
@@ -138,17 +185,21 @@ const onSubmitPre = () => {
     })
 }
 
+// 提交登录请求
 const onSubmit = (captchaInfo = '') => {
     state.submitLoading = true
     form.captchaInfo = captchaInfo
     login(form)
         .then((res) => {
-            const { access_token } = res.data
+            const  access_token  = res.data
+            console.log(res.data)
+            // 填充管理员信息
             adminInfo.dataFill({
-                type: form.username == 'admin' ? 1 : 2,
+                type: form.username == 'admin' ? 1 : 2,    // 根据用户名判断用户类型
                 username: form.username,
                 token: access_token,
             })
+            // 登录成功后跳转到首页
             router.push({ path: baseRoutePath })
         })
         .finally(() => {

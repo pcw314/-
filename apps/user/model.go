@@ -1,5 +1,19 @@
 package user
 
+import "time"
+
+type User struct {
+	ID           int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
+	Username     string `gorm:"colum:username" json:"username"`
+	Password     string `gorm:"colum:password" json:"password"`
+	Role         int    `gorm:"colum:role" json:"role"`
+	HeadPortrait string `gorm:"colum:head_portrait" json:"head_portrait"`
+}
+
+func (User) TableName() string {
+	return "users"
+}
+
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -27,4 +41,39 @@ type MenuRequest struct {
 
 func (MenuRequest) TableName() string {
 	return "permissions"
+}
+
+type Student struct {
+	ID     int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name   string `gorm:"column:name" json:"name"`
+	Sex    int8   `gorm:"column:sex" json:"sex"`
+	Age    int    `gorm:"column:age" json:"age"`
+	Major  string `gorm:"column:major" json:"major"` //专业
+	Phone  string `gorm:"column:phone" json:"phone"` //手机号
+	UserID int    `gorm:"column:user_id" json:"user_id"`
+}
+
+func (Student) TableName() string {
+	return "students"
+}
+
+type Enterprise struct {
+	ID         int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name       string    `gorm:"column:name" json:"name"`
+	LegaPerson string    `gorm:"column:lega_person" json:"lega_person"` //法定代表人
+	Phone      string    `gorm:"column:phone" json:"phone"`
+	State      int8      `gorm:"column:state" json:"state"`
+	CreatedAt  time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt  time.Time `gorm:"column:updated_at" json:"updated_at"`
+	UserID     int       `gorm:"column:user_id" json:"user_id"`
+}
+
+func (Enterprise) TableName() string {
+	return "enterprises"
+}
+
+type UpdatePasswordRequest struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+	ID          int    `json:"id"`
 }

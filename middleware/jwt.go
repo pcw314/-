@@ -10,25 +10,25 @@ import (
 var securityKey = []byte("EFBB4BE4-E8BB-6C04-F090-3A86291E7D10")
 
 type UserClaims struct {
-	UserId int64  `json:"user_id"`
-	RoleId int64  `json:"role_id"`
-	Phone  string `json:"phone"`
+	UserId   int    `json:"user_id"`
+	Role     int    `json:"role"`
+	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
 // MakeToken 生成Token
-func MakeToken(userId int64, phone string, roleId int64) (token string, err error) {
+func MakeToken(userId int, username string, role int) (token string, err error) {
 	claim := UserClaims{
-		UserId: userId,
-		Phone:  phone,
-		RoleId: roleId,
+		UserId:   userId,
+		Username: username,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			// 签发者
 			Issuer: "WiseCloud",
 			// 签发对象
 			Subject: "NiuB",
 			// 过期时间三小时
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(100 * 365 * 24 * time.Hour * time.Duration(1))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), //一周后过期
 			// 签发时间
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 			// 生效时间

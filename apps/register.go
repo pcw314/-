@@ -4,6 +4,10 @@ package apps
 import (
 	_ "gitee.com/xygfm/authorization/apps/admin/api"
 	_ "gitee.com/xygfm/authorization/apps/admin/impl"
+	_ "gitee.com/xygfm/authorization/apps/oss/api"
+	_ "gitee.com/xygfm/authorization/apps/oss/impl"
+	_ "gitee.com/xygfm/authorization/apps/place/api"
+	_ "gitee.com/xygfm/authorization/apps/place/impl"
 	_ "gitee.com/xygfm/authorization/apps/user/api"
 	_ "gitee.com/xygfm/authorization/apps/user/impl"
 )

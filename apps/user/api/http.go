@@ -30,9 +30,26 @@ func (h *handler) Name() string {
 
 func (h *handler) RegisterRoute(r gin.IRouter) error {
 	// 登录不进行任何中间件校验
-	r.POST("/login", h.Login)
-	r.GET("/menu", h.ListMenu)
+	//学生注册
+	r.POST("/student/create", h.CreateStudent)
+	//企业注册
+	r.POST("/enterprise/create", h.CreateEnterprise)
+	//进行检验
 	r.Use(service.Security())
-	r.POST("/register", h.Register)
+	//创建员工
+	r.POST("/staff/create", h.CreateStaff)
+	r.GET("/staff/list", h.ListStaff)
+	//修改密码
+	r.PUT("/staff/:id", h.UpdatePassword)
+	r.DELETE("/staff/:id", h.DeleteStaff)
+	r.GET("/staff/:id", h.GetStaff)
+	r.GET("/enterprise/list", h.ListEnterprise)
+	r.GET("/enterprise/:id", h.GetEnterprise)
+	r.PUT("/enterprise/:id", h.UpdateEnterprise)
+	r.DELETE("/enterprise/:id", h.DeleteEnterprise)
+	r.GET("/student/:id", h.GetStudent)
+	r.GET("/student/list", h.ListStudent)
+	r.PUT("/student/:id", h.UpdateStudent)
+	r.DELETE("/student/:id", h.DeleteStudent)
 	return nil
 }
