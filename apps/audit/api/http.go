@@ -31,6 +31,10 @@ func (h *handler) Name() string {
 func (h *handler) RegisterRoute(r gin.IRouter) error {
 	// 登录不进行任何中间件校验
 	r.Use(service.Security())
-	r.GET("/list", h.List)
+	r.GET("/enterprise/list", h.ListAuditEnterprise)
+	r.GET("/job/list", h.ListAuditJob)
+	r.PUT("/:id", h.UpdateAudit)
+	r.DELETE("/:id", h.DeleteAudit)
+	r.POST("", h.CreateAudit)
 	return nil
 }

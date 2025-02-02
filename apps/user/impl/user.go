@@ -10,6 +10,7 @@ import (
 	utils "gitee.com/xygfm/authorization/util"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"time"
 )
 
 func (i *impl) Login(ctx context.Context, req *user.LoginRequest) (string, error) {
@@ -53,6 +54,7 @@ func (i *impl) CreateStudent(ctx *gin.Context, req *user.Student) (*user.Student
 }
 
 func (i *impl) CreateEnterprise(ctx *gin.Context, req *user.Enterprise) (*user.Enterprise, error) {
+	req.CreatedAt = time.Now().UnixMilli()
 	err := i.mdb.Model(&user.Enterprise{}).Create(&req).Error
 	if err != nil {
 		fmt.Println("err", err)
@@ -144,7 +146,7 @@ func (i *impl) ListStudent(ctx *gin.Context, req *response.Paging) ([]*user.Stud
 		return nil, 0, err
 	}
 	var pos []*user.Student
-	err = i.mdb.Model(&user.Student{}).Where("user_id in (?)", ids).Find(&ids).Error
+	err = i.mdb.Model(&user.Student{}).Where("user_id in (?)", ids).Find(&pos).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -171,7 +173,7 @@ func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.E
 		return nil, 0, err
 	}
 	var pos []*user.Enterprise
-	err = i.mdb.Model(&user.Enterprise{}).Where("user_id in (?)", ids).Find(&ids).Error
+	err = i.mdb.Model(&user.Enterprise{}).Where("user_id in (?)", ids).Find(&pos).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -203,14 +205,26 @@ func (i *impl) GetStudentByID(ctx *gin.Context, id int) (*user.Student, error) {
 }
 
 func (i *impl) UpdateStudent(ctx *gin.Context, student *user.Student) (*user.Student, error) {
-	err := i.mdb.Model(&user.Student{}).Updates(&student).Error
+	err := i.mdb.Model(&user.Student{}).
+		Where("id = ?", student.ID).
+		Updates(&student).Error
 	if err != nil {
 		return nil, err
 	}
 	return student, nil
 }
 func (i *impl) UpdateEnterprise(ctx *gin.Context, enterprise *user.Enterprise) (*user.Enterprise, error) {
-	err := i.mdb.Model(&user.Enterprise{}).Updates(&enterprise).Error
+	err := i.mdb.Model(&user.Enterprise{}).
+		Where("id = ?", enterprise.ID).
+		Updates(&enterprise).Error
+	if err != nil {
+		return nil, err
+	}
+	err = i.mdb.Model(&user.Enterprise{}).
+		Where("id = ?", enterprise.ID).
+		Updates(map[string]interface{}{
+			"updated_at": time.Now().UnixMilli(),
+		}).Error
 	if err != nil {
 		return nil, err
 	}

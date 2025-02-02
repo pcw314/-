@@ -1,7 +1,5 @@
 package user
 
-import "time"
-
 type User struct {
 	ID           int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
 	Username     string `gorm:"colum:username" json:"username"`
@@ -58,14 +56,14 @@ func (Student) TableName() string {
 }
 
 type Enterprise struct {
-	ID         int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Name       string    `gorm:"column:name" json:"name"`
-	LegaPerson string    `gorm:"column:lega_person" json:"lega_person"` //法定代表人
-	Phone      string    `gorm:"column:phone" json:"phone"`
-	State      int8      `gorm:"column:state" json:"state"`
-	CreatedAt  time.Time `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt  time.Time `gorm:"column:updated_at" json:"updated_at"`
-	UserID     int       `gorm:"column:user_id" json:"user_id"`
+	ID         int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name       string `gorm:"column:name" json:"name"`
+	LegaPerson string `gorm:"column:lega_person" json:"lega_person"` //法定代表人
+	Phone      string `gorm:"column:phone" json:"phone"`
+	State      int8   `gorm:"column:state" json:"state"`
+	CreatedAt  int64  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt  int64  `gorm:"column:updated_at" json:"updated_at"`
+	UserID     int    `gorm:"column:user_id" json:"user_id"`
 }
 
 func (Enterprise) TableName() string {

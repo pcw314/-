@@ -33,41 +33,6 @@ func (i *impl) Register(ctx *gin.Context, req *admin.LoginRequest) (string, erro
 	return "", nil
 }
 
-func (i *impl) ListMenu(ctx *gin.Context, req *[]int) ([]*admin.MenuRequest, error) {
-	// 查询所有菜单数据
-	var menus []*admin.MenuRequest
-	err := i.mdb.Model(&admin.MenuRequest{}).Find(&menus).Error
-	if err != nil {
-		fmt.Println("err", err)
-		return nil, err
-	}
-
-	// 使用 Map 缓存所有菜单
-	menuMap := make(map[int]*admin.MenuRequest)
-	for _, menu := range menus {
-		menuMap[menu.ID] = menu
-	}
-
-	// 构建树形结构
-	var tree []*admin.MenuRequest
-	for _, menu := range menus {
-		if menu.PID == 0 {
-			// 根节点
-			tree = append(tree, menu)
-		} else {
-			// 找到父节点，将当前菜单添加到父节点的 Children 中
-			if parent, ok := menuMap[menu.PID]; ok {
-				if parent.Children == nil {
-					parent.Children = []*admin.MenuRequest{}
-				}
-				parent.Children = append(parent.Children, menu)
-			}
-		}
-	}
-
-	return tree, nil
-}
-
 func (i *impl) ListArea(ctx *gin.Context, id string) ([]*admin.Areas, error) {
 	var po []*admin.Areas
 	db := i.mdb.Model(&admin.Areas{})

@@ -21,7 +21,7 @@ func (h *handler) Login(ctx *gin.Context) {
 
 func (h *handler) CreateStaff(ctx *gin.Context) {
 	var req user.User
-	err := ctx.ShouldBindQuery(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
@@ -30,6 +30,13 @@ func (h *handler) CreateStaff(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError("无权限"))
 		return
 	}
+	if req.Username == "" || req.Password == "" {
+		response.Error(ctx, result.DefaultError("缺少参数"))
+		return
+	} else {
+		req.Password = utils.BcryptHash(req.Password)
+	}
+	req.Role = 3
 	_, err = h.svc.Register(ctx, &req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
@@ -41,7 +48,7 @@ func (h *handler) CreateStaff(ctx *gin.Context) {
 
 func (h *handler) CreateStudent(ctx *gin.Context) {
 	var req user.User
-	err := ctx.ShouldBindQuery(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
@@ -62,7 +69,7 @@ func (h *handler) CreateStudent(ctx *gin.Context) {
 }
 func (h *handler) CreateEnterprise(ctx *gin.Context) {
 	var req user.User
-	err := ctx.ShouldBindQuery(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
@@ -78,6 +85,46 @@ func (h *handler) CreateEnterprise(ctx *gin.Context) {
 		return
 	}
 }
+func (h *handler) Register(ctx *gin.Context) {
+	var req user.User
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	if req.Username == "" || req.Password == "" || req.Role == 0 {
+		response.Error(ctx, result.DefaultError("缺少参数"))
+		return
+	} else {
+		req.Password = utils.BcryptHash(req.Password)
+	}
+	u, err := h.svc.Register(ctx, &req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	if req.Role == 1 {
+		_, err = h.svc.CreateStudent(ctx, &user.Student{UserID: u.ID})
+		if err != nil {
+			response.Error(ctx, result.DefaultError(err.Error()))
+			return
+		}
+	} else if req.Role == 2 {
+		_, err = h.svc.CreateEnterprise(ctx, &user.Enterprise{UserID: u.ID})
+		if err != nil {
+			response.Error(ctx, result.DefaultError(err.Error()))
+			return
+		}
+	} else {
+		response.Error(ctx, result.DefaultError("参数错误"))
+		return
+	}
+
+	response.Success(ctx, result.NewCorrect("注册成功", ""))
+	return
+
+}
+
 func (h *handler) ListMenu(ctx *gin.Context) {
 	fmt.Println("进入获取菜单的api层")
 	fmt.Println("ru=========", utils.GetUserID(ctx))
@@ -126,7 +173,7 @@ func (h *handler) ListEnterprise(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	} else {
-		response.Success(ctx, result.NewCorrect("登录成功", response.Paging{
+		response.Success(ctx, result.NewCorrect("获取成功", response.Paging{
 			Size:   req.Size,
 			Page:   req.Page,
 			List:   list,

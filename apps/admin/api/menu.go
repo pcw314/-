@@ -1,8 +1,7 @@
 package api
 
 import (
-	"fmt"
-	"gitee.com/xygfm/authorization/apps/place"
+	"gitee.com/xygfm/authorization/apps/admin"
 	"gitee.com/xygfm/authorization/response"
 	"gitee.com/xygfm/authorization/response/result"
 	utils "gitee.com/xygfm/authorization/util"
@@ -10,33 +9,28 @@ import (
 	"github.com/spf13/cast"
 )
 
-func (h *handler) ListSchool(ctx *gin.Context) {
-	fmt.Println("我是Api层")
-	area := cast.ToInt(ctx.Param("area"))
-	fmt.Println("area", area)
-	var req response.Paging
-	err := ctx.ShouldBindQuery(&req)
+func (h *handler) ListMenu(ctx *gin.Context) {
+	var ids []int
+	if utils.GetUserRole(ctx) == 1 {
+		ids = admin.StudentMenu
+
+	} else if utils.GetUserRole(ctx) == 2 {
+		ids = admin.Enterprise
+
+	} else if utils.GetUserRole(ctx) == 3 {
+		ids = admin.AdminMenu
+	}
+	menu, err := h.svc.ListMenu(ctx, ids)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	if list, total, err := h.svc.ListSchool(ctx, &req, area); err != nil {
-		response.Error(ctx, result.DefaultError(err.Error()))
-		return
-	} else {
-		response.Success(ctx, result.NewCorrect("获取成功", response.Paging{
-			Size:   req.Size,
-			Page:   req.Page,
-			List:   list,
-			Total:  total,
-			Search: req.Search,
-		}))
-	}
+	response.Success(ctx, result.NewCorrect("获取菜单成功", menu))
 	return
 }
 
-func (h *handler) CreateSchool(ctx *gin.Context) {
-	var req place.School
+func (h *handler) CreateMenu(ctx *gin.Context) {
+	var req admin.MenuRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
@@ -46,7 +40,7 @@ func (h *handler) CreateSchool(ctx *gin.Context) {
 	if utils.GetUserRole(ctx) != 3 {
 		response.Error(ctx, result.DefaultError("无权限"))
 	}
-	_, err = h.svc.CreateSchool(ctx, req)
+	_, err = h.svc.CreateMenu(ctx, &req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
@@ -54,8 +48,8 @@ func (h *handler) CreateSchool(ctx *gin.Context) {
 	response.Success(ctx, result.NewCorrect("创建成功", ""))
 	return
 }
-func (h *handler) UpdateSchool(ctx *gin.Context) {
-	var req place.School
+func (h *handler) UpdateMenu(ctx *gin.Context) {
+	var req admin.MenuRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
@@ -66,7 +60,7 @@ func (h *handler) UpdateSchool(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError("没有权限"))
 		return
 	}
-	err = h.svc.UpdateSchool(ctx, req)
+	err = h.svc.UpdateMenu(ctx, &req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
@@ -75,9 +69,9 @@ func (h *handler) UpdateSchool(ctx *gin.Context) {
 	return
 }
 
-func (h *handler) DeleteSchool(ctx *gin.Context) {
+func (h *handler) DeleteMenu(ctx *gin.Context) {
 	id := cast.ToInt(ctx.Param("id"))
-	err := h.svc.DeleteSchool(ctx, id)
+	err := h.svc.DeleteMenu(ctx, id)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return

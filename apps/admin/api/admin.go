@@ -72,20 +72,6 @@ func (h *handler) Logout(ctx *gin.Context) {
 	return
 }
 
-func (h *handler) ListMenu(ctx *gin.Context) {
-	fmt.Println("进入获取菜单的api层")
-	fmt.Println("ru=========", utils.GetUserID(ctx))
-	var ids = []int{1, 2, 3}
-	menu, err := h.svc.ListMenu(ctx, &ids)
-	if err != nil {
-		fmt.Println("adjnjksjndksndkjas")
-		response.Error(ctx, result.DefaultError(err.Error()))
-		return
-	}
-	response.Success(ctx, result.NewCorrect("获取菜单成功", menu))
-	return
-}
-
 func (h *handler) ListArea(ctx *gin.Context) {
 	id := ctx.Param("id")
 	area, err := h.svc.ListArea(ctx, id)

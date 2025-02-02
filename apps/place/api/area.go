@@ -22,7 +22,7 @@ func (h *handler) ListArea(ctx *gin.Context) {
 
 func (h *handler) CreateArea(ctx *gin.Context) {
 	var req place.Area
-	err := ctx.ShouldBindQuery(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
@@ -41,7 +41,7 @@ func (h *handler) CreateArea(ctx *gin.Context) {
 }
 func (h *handler) UpdateArea(ctx *gin.Context) {
 	var req place.Area
-	err := ctx.ShouldBindQuery(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return

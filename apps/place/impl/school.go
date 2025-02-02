@@ -33,7 +33,7 @@ func (i *impl) ListSchool(ctx *gin.Context, req *response.Paging, area int) ([]*
 	return school, total, nil
 }
 func (i *impl) UpdateSchool(ctx *gin.Context, req place.School) error {
-	err := i.mdb.Model(&place.School{}).Updates(&req).Error
+	err := i.mdb.Model(&place.School{}).Where("id = ?", req.ID).Updates(&req).Error
 	if err != nil {
 		return err
 	}

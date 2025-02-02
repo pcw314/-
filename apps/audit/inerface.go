@@ -9,7 +9,7 @@ type Service interface {
 	ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*Audit, int64, error)
 	UpdateAudit(ctx *gin.Context, req *Audit) error
 	CreateAudit(ctx *gin.Context, req *Audit) (*Audit, error)
-	DeleteAudit(ctx *gin.Context, req *Audit) error
+	DeleteAudit(ctx *gin.Context, id int) error
 }
 
 type ServiceImpl struct{}
@@ -23,6 +23,6 @@ func (s *ServiceImpl) UpdateAudit(ctx *gin.Context, req *Audit) error {
 func (s *ServiceImpl) CreateAudit(ctx *gin.Context, req *Audit) (*Audit, error) {
 	return nil, nil
 }
-func (s *ServiceImpl) DeleteAudit(ctx *gin.Context, req *Audit) error {
+func (s *ServiceImpl) DeleteAudit(ctx *gin.Context, id int) error {
 	return nil
 }
