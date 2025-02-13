@@ -74,3 +74,20 @@ type Areas struct {
 func (Areas) TableName() string {
 	return "areas"
 }
+
+type Menu struct {
+	ID       int     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
+	ParentID int     `gorm:"column:parent_id" json:"parent_id"`
+	Type     string  `gorm:"column:type" json:"type"` // 类型：menu 或 button
+	Method   string  `gorm:"column:method" json:"method"`
+	Title    string  `gorm:"column:title" json:"title"` // 标题
+	Path     string  `gorm:"column:path" json:"path"`   // 路由路径
+	Icon     string  `gorm:"column:icon" json:"icon"`   // 图标
+	Sort     int     `gorm:"column:sort" json:"sort"`
+	IsHide   int8    `gorm:"column:is_hide" json:"is_hide"`
+	Children []*Menu `gorm:"-" json:"children"`
+}
+
+func (Menu) TableName() string {
+	return "menus"
+}

@@ -29,6 +29,7 @@ type Service interface {
 	GetStudentByID(ctx *gin.Context, id int) (*Student, error)
 	// GetEnterpriseByID 根据id获取商户信息
 	GetEnterpriseByID(ctx *gin.Context, id int) (*Enterprise, error)
+	GetEnterpriseByUserID(ctx *gin.Context, userID int) (*Enterprise, error)
 	UpdateStudent(ctx *gin.Context, req *Student) (*Student, error)
 	UpdateEnterprise(ctx *gin.Context, req *Enterprise) (*Enterprise, error)
 	UpdatePassword(ctx *gin.Context, id int, nowPassword, oldPassword string) error
@@ -75,6 +76,10 @@ func (s *ServiceImpl) GetStudentByID(ctx *gin.Context, id int) (*Student, error)
 	return nil, nil
 }
 func (s *ServiceImpl) GetEnterpriseByID(ctx *gin.Context, id int) (*Enterprise, error) {
+	return nil, nil
+}
+
+func (s *ServiceImpl) GetEnterpriseByUserID(ctx *gin.Context, userID int) (*Enterprise, error) {
 	return nil, nil
 }
 func (s *ServiceImpl) UpdateStudent(ctx *gin.Context, req *Student) (*Student, error) {

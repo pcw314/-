@@ -195,6 +195,14 @@ func (i *impl) GetEnterpriseByID(ctx *gin.Context, id int) (*user.Enterprise, er
 	}
 	return po, nil
 }
+func (i *impl) GetEnterpriseByUserID(ctx *gin.Context, userID int) (*user.Enterprise, error) {
+	var po *user.Enterprise
+	err := i.mdb.Model(&user.Enterprise{}).Where("user_id = ?", userID).First(&po).Error
+	if err != nil {
+		return nil, err
+	}
+	return po, nil
+}
 func (i *impl) GetStudentByID(ctx *gin.Context, id int) (*user.Student, error) {
 	var po *user.Student
 	err := i.mdb.Model(&user.Student{}).Where("id = ?", id).First(&po).Error

@@ -11,11 +11,11 @@ type Service interface {
 	// Logout 退出登录
 	Logout(ctx *gin.Context) error
 	// ListMenu 获取菜单
-	ListMenu(ctx *gin.Context, req []int) ([]*MenuRequest, error)
+	ListMenu(ctx *gin.Context, req []int) ([]*Menu, error)
 	// UpdateMenu 修改菜单
-	UpdateMenu(ctx *gin.Context, req *MenuRequest) error
+	UpdateMenu(ctx *gin.Context, req *Menu) error
 	// CreateMenu 创建菜单
-	CreateMenu(ctx *gin.Context, req *MenuRequest) (*MenuRequest, error)
+	CreateMenu(ctx *gin.Context, req *Menu) (*Menu, error)
 	// DeleteMenu 删除菜单
 	DeleteMenu(ctx *gin.Context, id int) error
 	// ListArea 获取全部地区
@@ -36,14 +36,14 @@ func (s *ServiceImpl) Logout(ctx *gin.Context) error {
 	return nil
 }
 
-func (s *ServiceImpl) ListMenu(ctx *gin.Context, req []int) ([]*MenuRequest, error) {
+func (s *ServiceImpl) ListMenu(ctx *gin.Context, req []int) ([]*Menu, error) {
 	return nil, nil
 }
 
-func (s *ServiceImpl) UpdateMenu(ctx *gin.Context, req *MenuRequest) error {
+func (s *ServiceImpl) UpdateMenu(ctx *gin.Context, req *Menu) error {
 	return nil
 }
-func (s *ServiceImpl) CreateMenu(ctx *gin.Context, req *MenuRequest) (*MenuRequest, error) {
+func (s *ServiceImpl) CreateMenu(ctx *gin.Context, req *Menu) (*Menu, error) {
 	return nil, nil
 }
 func (s *ServiceImpl) DeleteMenu(ctx *gin.Context, id int) error {

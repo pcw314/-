@@ -30,7 +30,7 @@ func (h *handler) ListMenu(ctx *gin.Context) {
 }
 
 func (h *handler) CreateMenu(ctx *gin.Context) {
-	var req admin.MenuRequest
+	var req admin.Menu
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
@@ -49,7 +49,7 @@ func (h *handler) CreateMenu(ctx *gin.Context) {
 	return
 }
 func (h *handler) UpdateMenu(ctx *gin.Context) {
-	var req admin.MenuRequest
+	var req admin.Menu
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))

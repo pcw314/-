@@ -32,6 +32,7 @@ type Job struct {
 	Place         string `gorm:"column:place" json:"place"`
 	Salary        string `gorm:"column:salary" json:"salary"`
 	Post          string `gorm:"column:post" json:"post"`
+	SchoolID      int    `gorm:"column:school_id" json:"school_id"`
 	Description   string `gorm:"column:description" json:"description"`
 	Require       string `gorm:"column:require" json:"require"`
 	ContactName   string `gorm:"column:contact_name" json:"contact_name"`
