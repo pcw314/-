@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"gitee.com/xygfm/authorization/apps/user"
+	service "gitee.com/xygfm/authorization/middleware"
 	"gitee.com/xygfm/authorization/response"
 	"gitee.com/xygfm/authorization/response/result"
 	utils "gitee.com/xygfm/authorization/util"
@@ -119,8 +120,8 @@ func (h *handler) Register(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError("参数错误"))
 		return
 	}
-
-	response.Success(ctx, result.NewCorrect("注册成功", ""))
+	token, err := service.MakeToken(req.ID, req.Username, req.Role)
+	response.Success(ctx, result.NewCorrect("注册成功", token))
 	return
 
 }
@@ -131,7 +132,6 @@ func (h *handler) ListMenu(ctx *gin.Context) {
 	var ids = []int{1, 2, 3}
 	menu, err := h.svc.ListMenu(ctx, &ids)
 	if err != nil {
-		fmt.Println("adjnjksjndksndkjas")
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}

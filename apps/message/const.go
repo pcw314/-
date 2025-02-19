@@ -12,6 +12,7 @@ const (
 
 // websocket.go
 var Clients = make(map[uint]*websocket.Conn)
+var ConvClients = make(map[uint]*websocket.Conn)
 var Mutex sync.Mutex
 var Upgrade = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {

@@ -43,6 +43,9 @@ func (i *impl) HandleMessage(ctx *gin.Context, msg message.Message) {
 			msg.ConvID = conversation.ID
 		}
 	}
+	var role int
+	i.mdb.Model(&user.User{}).Select("role").Where("id = ?", msg.ReceiverID).First(&role)
+	fmt.Println("53405495", role)
 	fmt.Println("msg", msg)
 	i.mdb.Model(&message.Message{}).Create(&message.Message{
 		ConvID:    msg.ConvID,
@@ -67,11 +70,35 @@ func (i *impl) HandleMessage(ctx *gin.Context, msg message.Message) {
 			delete(message.Clients, uint(msg.IsRead)) // 移除客户端
 			return
 		}
+		fmt.Println("=============")
+		fmt.Println(message.Clients)
 	} else {
+		fmt.Println("452345423423423")
 		err := i.IncrementUnreadCount(ctx, msg.ConvID, msg.ReceiverID)
 		if err != nil {
 			fmt.Println("增加未读数失败", err)
 		}
+		fmt.Println(i.GetUnreadCount(ctx, msg.ConvID, msg.ReceiverID))
+		convList, err := i.ListConversation(ctx, role, msg.ReceiverID)
+		if err != nil {
+			return
+		}
+		message.Mutex.Lock()
+		coveConn, ok := message.ConvClients[uint(msg.ReceiverID)]
+		message.Mutex.Unlock()
+		if ok {
+			err := coveConn.WriteJSON(gin.H{
+				"type": "new_convList",
+				"data": convList,
+			})
+			if err != nil {
+				fmt.Println("向客户端发送消息失败:", err)
+				coveConn.Close()                              // 关闭失败的连接
+				delete(message.ConvClients, uint(msg.IsRead)) // 移除客户端
+				return
+			}
+		}
+
 	}
 }
 
@@ -133,7 +160,7 @@ func (i *impl) ListConversation(ctx *gin.Context, role int, userID int) ([]*mess
 	} else if role == 2 {
 		db.Where("enterprise_id = ?", userID)
 	}
-	err := db.Find(pos).Error
+	err := db.Find(&pos).Error
 	if err != nil {
 		return nil, err
 	}

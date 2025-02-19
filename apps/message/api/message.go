@@ -46,10 +46,16 @@ func (h *handler) HandleWebSocket(c *gin.Context) {
 
 // 心跳检测函数
 func (h *handler) handleHeartbeat(conn *websocket.Conn) {
-	// 每隔30秒发送一次心跳
 	fmt.Println("开启心跳检测")
 	heartbeatInterval := 30 * time.Second
 	pingTimeout := 10 * time.Second // 设定等待客户端回应的超时时间
+
+	// 监听 Pong 消息，收到后刷新 ReadDeadline
+	conn.SetPongHandler(func(appData string) error {
+		log.Println("收到 Pong 响应")
+		conn.SetReadDeadline(time.Now().Add(heartbeatInterval + pingTimeout))
+		return nil
+	})
 
 	ticker := time.NewTicker(heartbeatInterval)
 	defer ticker.Stop()
@@ -65,16 +71,10 @@ func (h *handler) handleHeartbeat(conn *websocket.Conn) {
 				return
 			}
 
-			// 设置超时处理，如果在指定时间内没有收到 Pong 响应，关闭连接
+			// 设定超时，如果在 `pingTimeout` 时间内没有收到 Pong，连接会超时
 			err = conn.SetReadDeadline(time.Now().Add(pingTimeout))
 			if err != nil {
 				log.Println("设置读取截止时间失败:", err)
-				conn.Close()
-				return
-			}
-			_, _, err = conn.ReadMessage()
-			if err != nil {
-				log.Println("未收到 Pong 响应，关闭连接:", err)
 				conn.Close()
 				return
 			}
@@ -124,6 +124,19 @@ func (h *handler) ListMessages(ctx *gin.Context) {
 }
 
 func (h *handler) ListConversation(ctx *gin.Context) {
+
+	conn, err := message.Upgrade.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		log.Println("WebSocket upgrade failed:", err)
+		return
+	}
+
+	userID := utils.GetUserID(ctx) // 从认证获取用户ID
+	fmt.Println("userID:", userID)
+	message.Mutex.Lock()
+	message.ConvClients[cast.ToUint(userID)] = conn
+	message.Mutex.Unlock()
+
 	conversation, err := h.svc.ListConversation(ctx, utils.GetUserRole(ctx), utils.GetUserID(ctx))
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))

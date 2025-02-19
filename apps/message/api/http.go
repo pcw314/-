@@ -29,9 +29,7 @@ func (h *handler) Name() string {
 }
 
 func (h *handler) RegisterRoute(r gin.IRouter) error {
-	// 登录不进行任何中间件校验
 	r.Use(service.Security())
-	//获取商户招聘信息
 	r.GET("/ws", h.HandleWebSocket)
 	r.GET("/ws/message/:to_user_id/list/:conv_id", h.ListMessages)
 	r.GET("/ws/conversation/list", h.ListConversation)
