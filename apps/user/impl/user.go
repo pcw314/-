@@ -189,10 +189,29 @@ func (i *impl) GetStaffByID(ctx *gin.Context, id int) (*user.User, error) {
 }
 func (i *impl) GetEnterpriseByID(ctx *gin.Context, id int) (*user.Enterprise, error) {
 	var po *user.Enterprise
-	err := i.mdb.Model(&user.Enterprise{}).Where("id = ?", id).First(&po).Error
+	var userInfo user.User
+	db := i.mdb.Model(&user.Enterprise{})
+	udb := i.mdb.Model(&user.User{}).Select("id,username,role")
+	if id == 0 {
+		db = db.Where("user_id = ?", utils.GetUserID(ctx))
+	} else {
+		db = db.Where("id = ?", id)
+	}
+	err := db.First(&po).Error
 	if err != nil {
 		return nil, err
 	}
+	if id == 0 {
+		udb = udb.Where("id = ?", utils.GetUserID(ctx))
+	} else {
+		udb = udb.Where("id = ?", po.UserID)
+	}
+	err = udb.First(&userInfo).Error
+	if err != nil {
+		return nil, err
+	}
+	po.Username = userInfo.Username
+	po.Role = userInfo.Role
 	return po, nil
 }
 func (i *impl) GetEnterpriseByUserID(ctx *gin.Context, userID int) (*user.Enterprise, error) {
@@ -205,10 +224,29 @@ func (i *impl) GetEnterpriseByUserID(ctx *gin.Context, userID int) (*user.Enterp
 }
 func (i *impl) GetStudentByID(ctx *gin.Context, id int) (*user.Student, error) {
 	var po *user.Student
-	err := i.mdb.Model(&user.Student{}).Where("id = ?", id).First(&po).Error
+	var userInfo user.User
+	db := i.mdb.Model(&user.Student{})
+	udb := i.mdb.Model(&user.User{}).Select("id,username,role")
+	if id == 0 {
+		db = db.Where("user_id = ?", utils.GetUserID(ctx))
+	} else {
+		db = db.Where("id = ?", id)
+	}
+	err := db.First(&po).Error
 	if err != nil {
 		return nil, err
 	}
+	if id == 0 {
+		udb = udb.Where("id = ?", utils.GetUserID(ctx))
+	} else {
+		udb = udb.Where("id = ?", po.UserID)
+	}
+	err = udb.First(&userInfo).Error
+	if err != nil {
+		return nil, err
+	}
+	po.Username = userInfo.Username
+	po.Role = userInfo.Role
 	return po, nil
 }
 

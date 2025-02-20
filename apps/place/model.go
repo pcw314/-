@@ -26,6 +26,7 @@ type School struct {
 	CityID     int    `gorm:"column:city_id" json:"city_id"`
 	AreaID     int    `gorm:"column:area_id" json:"area_id"`
 	State      int    `gorm:"column:state" json:"state"`
+	VisitNum   int    `gorm:"column:visit_num" json:"visit_num"`
 }
 
 func (School) TableName() string {

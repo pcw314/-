@@ -15,6 +15,7 @@ type Service interface {
 	UpdateSchool(ctx *gin.Context, req School) error
 	CreateSchool(ctx *gin.Context, req School) (*School, error)
 	DeleteSchool(ctx *gin.Context, id int) error
+	ListHotSchool(ctx *gin.Context, req *response.Paging) ([]*School, error)
 }
 
 type ServiceImpl struct{}
@@ -43,4 +44,7 @@ func (s *ServiceImpl) CreateSchool(ctx *gin.Context, req School) (*School, error
 }
 func (s *ServiceImpl) DeleteSchool(ctx *gin.Context, id int) error {
 	return nil
+}
+func (s *ServiceImpl) ListHotSchool(ctx *gin.Context, req *response.Paging) ([]*School, error) {
+	return nil, nil
 }

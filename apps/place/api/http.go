@@ -40,5 +40,6 @@ func (h *handler) RegisterRoute(r gin.IRouter) error {
 	school.PUT("/:id", h.UpdateSchool)
 	school.POST("", h.CreateSchool)
 	school.DELETE("/:id", h.DeleteSchool)
+	school.GET("/top", h.ListTopSchool)
 	return nil
 }

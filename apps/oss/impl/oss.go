@@ -89,6 +89,7 @@ func (i *impl) UploadFiles(ctx *gin.Context, files []*multipart.FileHeader) ([]o
 		if err != nil {
 			return nil, err
 		}
+		fileInfo.Path = utils.GetApiByType("file").Url + fileInfo.Path
 		fileInfos = append(fileInfos, fileInfo)
 	}
 

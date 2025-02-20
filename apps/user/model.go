@@ -1,11 +1,15 @@
 package user
 
+import (
+	utils "gitee.com/xygfm/authorization/util"
+	"gorm.io/gorm"
+)
+
 type User struct {
-	ID           int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
-	Username     string `gorm:"colum:username" json:"username"`
-	Password     string `gorm:"colum:password" json:"password"`
-	Role         int    `gorm:"colum:role" json:"role"`
-	HeadPortrait string `gorm:"colum:head_portrait" json:"head_portrait"`
+	ID       int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
+	Username string `gorm:"colum:username" json:"username"`
+	Password string `gorm:"colum:password" json:"password"`
+	Role     int    `gorm:"colum:role" json:"role"`
 }
 
 func (User) TableName() string {
@@ -42,13 +46,20 @@ func (MenuRequest) TableName() string {
 }
 
 type Student struct {
-	ID     int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Name   string `gorm:"column:name" json:"name"`
-	Sex    int8   `gorm:"column:sex" json:"sex"`
-	Age    int    `gorm:"column:age" json:"age"`
-	Major  string `gorm:"column:major" json:"major"` //专业
-	Phone  string `gorm:"column:phone" json:"phone"` //手机号
-	UserID int    `gorm:"column:user_id" json:"user_id"`
+	ID         int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name       string `gorm:"column:name" json:"name"`
+	Sex        int8   `gorm:"column:sex" json:"sex"`
+	Age        int    `gorm:"column:age" json:"age"`
+	Major      string `gorm:"column:major" json:"major"` //专业
+	Phone      string `gorm:"column:phone" json:"phone"` //手机号
+	UserID     int    `gorm:"column:user_id" json:"user_id"`
+	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
+	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
+	CityID     int    `gorm:"column:city_id" json:"city_id"`
+	AreaID     int    `gorm:"column:area_id" json:"area_id"`
+	Username   string `gorm:"-" json:"username"`
+	Role       int    `gorm:"-" json:"role"`
+	Avatar     string `gorm:"colum:avatar" json:"avatar"`
 }
 
 func (Student) TableName() string {
@@ -60,10 +71,17 @@ type Enterprise struct {
 	Name       string `gorm:"column:name" json:"name"`
 	LegaPerson string `gorm:"column:lega_person" json:"lega_person"` //法定代表人
 	Phone      string `gorm:"column:phone" json:"phone"`
+	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
+	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
+	CityID     int    `gorm:"column:city_id" json:"city_id"`
+	AreaID     int    `gorm:"column:area_id" json:"area_id"`
 	State      int8   `gorm:"column:state" json:"state"`
 	CreatedAt  int64  `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt  int64  `gorm:"column:updated_at" json:"updated_at"`
 	UserID     int    `gorm:"column:user_id" json:"user_id"`
+	Username   string `gorm:"-" json:"username"`
+	Role       int    `gorm:"-" json:"role"`
+	Avatar     string `gorm:"colum:avatar" json:"avatar"`
 }
 
 func (Enterprise) TableName() string {
@@ -74,4 +92,23 @@ type UpdatePasswordRequest struct {
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
 	ID          int    `json:"id"`
+}
+
+// BeforeCreate 在创建之前执行的函数
+func (f *Enterprise) BeforeCreate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// BeforeUpdate 在更新之前执行的函数
+func (f *Enterprise) BeforeUpdate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// AfterFind 在查询之后执行的函数
+func (f *Enterprise) AfterFind(tx *gorm.DB) (err error) {
+	api := utils.GetApiByType("file")
+	f.Avatar = api.Url + f.Avatar
+	return
 }

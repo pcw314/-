@@ -53,3 +53,21 @@ func (i *impl) DeleteSchool(ctx *gin.Context, id int) error {
 	}
 	return nil
 }
+
+func (i *impl) ListHotSchool(ctx *gin.Context, req *response.Paging) ([]*place.School, error) {
+	limit := req.Size
+	offset := (req.Page - 1) * limit
+	var school []*place.School
+	db := i.mdb.Model(&place.School{})
+	if req.Search != "" {
+		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+	}
+	if limit != 0 {
+		db = db.Limit(limit).Offset(offset)
+	}
+	err := db.Order("visit_num desc").Find(&school).Error
+	if err != nil {
+		return nil, err
+	}
+	return school, nil
+}

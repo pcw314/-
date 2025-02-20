@@ -220,6 +220,9 @@ func (h *handler) GetStaff(ctx *gin.Context) {
 }
 func (h *handler) GetStudent(ctx *gin.Context) {
 	id := cast.ToInt(ctx.Param("id"))
+	if id == 0 {
+		id = utils.GetUserID(ctx)
+	}
 	re, err := h.svc.GetStudentByID(ctx, id)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))

@@ -84,3 +84,23 @@ func (h *handler) DeleteSchool(ctx *gin.Context) {
 	}
 	response.Success(ctx, result.NewCorrect("删除成功", ""))
 }
+
+func (h *handler) ListTopSchool(ctx *gin.Context) {
+	var req response.Paging
+	err := ctx.ShouldBindQuery(&req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	if list, err := h.svc.ListHotSchool(ctx, &req); err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	} else {
+		response.Success(ctx, result.NewCorrect("获取成功", response.Paging{
+			Size: req.Size,
+			Page: req.Page,
+			List: list,
+		}))
+	}
+	return
+}
