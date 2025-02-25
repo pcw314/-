@@ -6,6 +6,7 @@ import (
 	"gitee.com/xygfm/authorization/apps/position"
 	"gitee.com/xygfm/authorization/apps/user"
 	"gitee.com/xygfm/authorization/response"
+	utils "gitee.com/xygfm/authorization/util"
 	"github.com/gin-gonic/gin"
 	"time"
 )
@@ -61,7 +62,6 @@ func (i *impl) ListJob(ctx *gin.Context, req *response.Paging, enterpriseID int)
 func (i *impl) UpdateJob(ctx *gin.Context, req *position.Job) error {
 	i.mdb.Model(&position.Job{}).Where("id = ?", req.ID).
 		Updates(map[string]interface{}{
-			"name":           req.Name,
 			"type":           req.Type,
 			"working_time":   req.WorkingTime,
 			"place":          req.Place,
@@ -166,37 +166,50 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	if err != nil {
 		return nil, 0, err
 	}
-
+	var jobIDs []int
 	var enterpriseIDs []int
 	var enterprise []*user.Enterprise
-	var userIDs []int
-	var users []*user.User
+	//var userIDs []int
+	//var users []*user.User
 	for _, item := range pos {
 		enterpriseIDs = append(enterpriseIDs, item.EnterpriseID)
+		jobIDs = append(jobIDs, item.ID)
 	}
+
+	var collects []*position.Collect
+	err = i.mdb.Model(&position.Collect{}).
+		Where("user_id = ?", utils.GetUserID(ctx)).
+		Where("job_id in ?", jobIDs).
+		Find(&collects).Error
+
+	collectMAP := make(map[int]int)
+	for _, item := range collects {
+		collectMAP[item.JobID] = 1
+	}
+
 	err = i.mdb.Model(&user.Enterprise{}).
 		Where("id IN (?)", enterpriseIDs).
 		Find(&enterprise).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	for _, item := range enterprise {
-		userIDs = append(userIDs, item.UserID)
-	}
-	err = i.mdb.Model(&user.User{}).
-		Where("id IN (?)", userIDs).
-		Find(&users).Error
-	if err != nil {
-		return nil, 0, err
-	}
+	//for _, item := range enterprise {
+	//	userIDs = append(userIDs, item.UserID)
+	//}
+	//err = i.mdb.Model(&user.User{}).
+	//	Where("id IN (?)", userIDs).
+	//	Find(&users).Error
+	//if err != nil {
+	//	return nil, 0, err
+	//}
 	enterpriseMAP := make(map[int]*user.Enterprise)
-	userMAP := make(map[int]*user.User)
+	//userMAP := make(map[int]*user.User)
 	for _, item := range enterprise {
 		enterpriseMAP[item.ID] = item
 	}
-	for _, item := range users {
-		userMAP[item.ID] = item
-	}
+	//for _, item := range users {
+	//	userMAP[item.ID] = item
+	//}
 	//for j, item := range pos {
 	//	pos[j].EnterpriseInfo = enterpriseMAP[item.EnterpriseID]
 	//	pos[j].UserInfo = userMAP[enterpriseMAP[item.EnterpriseID].UserID]
@@ -204,9 +217,12 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	for j, item := range pos {
 		if enterpriseInfo, ok := enterpriseMAP[item.EnterpriseID]; ok {
 			pos[j].EnterpriseInfo = enterpriseInfo
-			if userInfo, ok := userMAP[enterpriseInfo.UserID]; ok {
-				pos[j].UserInfo = userInfo
-			}
+			//if userInfo, ok := userMAP[enterpriseInfo.UserID]; ok {
+			//	pos[j].UserInfo = userInfo
+			//}
+		}
+		if is, ok := collectMAP[item.ID]; ok {
+			pos[j].IsCollect = is
 		}
 	}
 

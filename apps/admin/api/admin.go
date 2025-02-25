@@ -23,7 +23,7 @@ func (h *handler) Login(ctx *gin.Context) {
 	fmt.Println("req", req)
 	user, err := h.svc.GetUser(ctx, &admin.LoginRequest{Username: req.Username, Role: req.Role})
 	if err != nil {
-		response.Error(ctx, result.DefaultError(err.Error()))
+		response.Error(ctx, result.DefaultError("用户名或密码错误"))
 		return
 	}
 	fmt.Println("user", user)

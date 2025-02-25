@@ -7,7 +7,6 @@ type Job struct {
 	EnterpriseID   int              `gorm:"column:enterprise_id" json:"enterprise_id"`
 	EnterpriseInfo *user.Enterprise `gorm:"-" json:"enterprise_info"`
 	UserInfo       *user.User       `gorm:"-" json:"user_info"`
-	Name           string           `gorm:"column:name" json:"name"`
 	Type           int              `gorm:"column:type" json:"type"`
 	WorkingTime    string           `gorm:"column:working_time" json:"working_time"`
 	Place          string           `gorm:"column:place" json:"place"`
@@ -19,8 +18,10 @@ type Job struct {
 	ContactName    string           `gorm:"column:contact_name" json:"contact_name"`
 	ContactNumber  string           `gorm:"column:contact_number" json:"contact_number"`
 	State          int              `gorm:"column:state" json:"state"`
+	Reply          string           `gorm:"column:reply" json:"reply"`
 	CreatedAt      int64            `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt      int64            `gorm:"column:updated_at" json:"updated_at"`
+	IsCollect      int              `gorm:"-" json:"is_collect"`
 }
 
 func (Job) TableName() string {

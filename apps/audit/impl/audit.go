@@ -3,6 +3,7 @@ package impl
 import (
 	"fmt"
 	"gitee.com/xygfm/authorization/apps/audit"
+	"gitee.com/xygfm/authorization/apps/position"
 	"gitee.com/xygfm/authorization/apps/user"
 	"gitee.com/xygfm/authorization/response"
 	utils "gitee.com/xygfm/authorization/util"
@@ -81,13 +82,40 @@ func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*a
 	return po, total, nil
 }
 func (i *impl) UpdateAudit(ctx *gin.Context, req *audit.Audit) error {
-	i.mdb.Model(&audit.Audit{}).Where("id = ?", req.ID).
+	// 开启事务
+	tx := i.mdb.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 第一个更新操作
+	err := tx.Model(&audit.Audit{}).Where("id = ?", req.ID).
 		Updates(map[string]interface{}{
 			"reply":      req.Reply,
 			"state":      req.State,
 			"updated_at": time.Now().UnixMilli(),
 			"auditor":    utils.GetUserID(ctx),
-		})
+		}).Error
+	if err != nil {
+		tx.Rollback() // 如果出错，回滚事务
+		return err
+	}
+	// 第二个更新操作
+	err = tx.Model(&position.Job{}).Where("id = ?", req.JobID).Updates(map[string]interface{}{
+		"reply": req.Reply,
+		"state": -2,
+	}).Error
+	if err != nil {
+		tx.Rollback() // 如果出错，回滚事务
+		return err
+	}
+	// 提交事务
+	if err = tx.Commit().Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 func (i *impl) CreateAudit(ctx *gin.Context, req *audit.Audit) (*audit.Audit, error) {

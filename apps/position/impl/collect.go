@@ -6,6 +6,7 @@ import (
 	"gitee.com/xygfm/authorization/apps/position"
 	"gitee.com/xygfm/authorization/apps/user"
 	"gitee.com/xygfm/authorization/response"
+	utils "gitee.com/xygfm/authorization/util"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -40,8 +41,8 @@ func (i *impl) ListCollect(ctx *gin.Context, req *response.Paging, userID int) (
 	}
 	var enterpriseIDs []int
 	var enterprise []*user.Enterprise
-	var userIDs []int
-	var users []*user.User
+	//var userIDs []int
+	//var users []*user.User
 	for _, item := range pos {
 		enterpriseIDs = append(enterpriseIDs, item.EnterpriseID)
 	}
@@ -51,23 +52,23 @@ func (i *impl) ListCollect(ctx *gin.Context, req *response.Paging, userID int) (
 	if err != nil {
 		return nil, 0, err
 	}
-	for _, item := range enterprise {
-		userIDs = append(userIDs, item.UserID)
-	}
-	err = i.mdb.Model(&user.User{}).
-		Where("id IN (?)", userIDs).
-		Find(&users).Error
-	if err != nil {
-		return nil, 0, err
-	}
+	//for _, item := range enterprise {
+	//	userIDs = append(userIDs, item.UserID)
+	//}
+	//err = i.mdb.Model(&user.User{}).
+	//	Where("id IN (?)", userIDs).
+	//	Find(&users).Error
+	//if err != nil {
+	//	return nil, 0, err
+	//}
 	enterpriseMAP := make(map[int]*user.Enterprise)
-	userMAP := make(map[int]*user.User)
+	//userMAP := make(map[int]*user.User)
 	for _, item := range enterprise {
 		enterpriseMAP[item.ID] = item
 	}
-	for _, item := range users {
-		userMAP[item.ID] = item
-	}
+	//for _, item := range users {
+	//	userMAP[item.ID] = item
+	//}
 	//for j, item := range pos {
 	//	pos[j].EnterpriseInfo = enterpriseMAP[item.EnterpriseID]
 	//	pos[j].UserInfo = userMAP[enterpriseMAP[item.EnterpriseID].UserID]
@@ -75,10 +76,11 @@ func (i *impl) ListCollect(ctx *gin.Context, req *response.Paging, userID int) (
 	for j, item := range pos {
 		if enterpriseInfo, ok := enterpriseMAP[item.EnterpriseID]; ok {
 			pos[j].EnterpriseInfo = enterpriseInfo
-			if userInfo, ok := userMAP[enterpriseInfo.UserID]; ok {
-				pos[j].UserInfo = userInfo
-			}
+			//if userInfo, ok := userMAP[enterpriseInfo.UserID]; ok {
+			//	pos[j].UserInfo = userInfo
+			//}
 		}
+		pos[j].IsCollect = 1
 	}
 	return pos, total, nil
 }
@@ -117,8 +119,10 @@ func (i *impl) CreateCollect(ctx *gin.Context, collect position.Collect) (*posit
 }
 
 func (i *impl) DeleteCollect(ctx *gin.Context, id int) error {
-	// 查询并删除指定 ID 的收藏记录
-	if err := i.mdb.Model(&position.Collect{}).Where("id = ?", id).Delete(&position.Collect{}).Error; err != nil {
+	if err := i.mdb.Model(&position.Collect{}).
+		Where("user_id = ?", utils.GetUserID(ctx)).
+		Where("job_id = ?", id).
+		Delete(&position.Collect{}).Error; err != nil {
 		return err
 	}
 
