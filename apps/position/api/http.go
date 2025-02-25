@@ -34,8 +34,14 @@ func (h *handler) RegisterRoute(r gin.IRouter) error {
 	//获取商户招聘信息
 	r.GET("/list", h.ListAuditJob)
 	r.GET("/list/:school_id", h.ListJobBySchoolID)
+	r.GET("/:id", h.GetJobByID)
 	r.PUT("/:id", h.UpdateJob)
+	r.PUT("/putaway/:id", h.SetJobState)
 	r.DELETE("/:id", h.DeleteJob)
 	r.POST("", h.CreateJob)
+	collect := r.Group("/collect")
+	collect.GET("/list", h.ListCollect)
+	collect.POST("/:id", h.CreateCollect)
+	collect.DELETE("/:id", h.DeleteCollect)
 	return nil
 }

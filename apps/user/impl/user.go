@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gitee.com/xygfm/authorization/apps/place"
 	"gitee.com/xygfm/authorization/apps/user"
 	service "gitee.com/xygfm/authorization/middleware"
 	"gitee.com/xygfm/authorization/response"
@@ -210,6 +211,12 @@ func (i *impl) GetEnterpriseByID(ctx *gin.Context, id int) (*user.Enterprise, er
 	if err != nil {
 		return nil, err
 	}
+	var name string
+	err = i.mdb.Model(&place.School{}).
+		Select("name").
+		Where("id = ?", po.SchoolID).
+		First(&name).Error
+	po.SchoolName = name
 	po.Username = userInfo.Username
 	po.Role = userInfo.Role
 	return po, nil
@@ -245,6 +252,12 @@ func (i *impl) GetStudentByID(ctx *gin.Context, id int) (*user.Student, error) {
 	if err != nil {
 		return nil, err
 	}
+	var name string
+	err = i.mdb.Model(&place.School{}).
+		Select("name").
+		Where("id = ?", po.SchoolID).
+		First(&name).Error
+	po.SchoolName = name
 	po.Username = userInfo.Username
 	po.Role = userInfo.Role
 	return po, nil

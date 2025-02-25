@@ -54,6 +54,7 @@ type Student struct {
 	Phone      string `gorm:"column:phone" json:"phone"` //手机号
 	UserID     int    `gorm:"column:user_id" json:"user_id"`
 	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
+	SchoolName string `gorm:"-" json:"school_name"`
 	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
 	CityID     int    `gorm:"column:city_id" json:"city_id"`
 	AreaID     int    `gorm:"column:area_id" json:"area_id"`
@@ -72,6 +73,7 @@ type Enterprise struct {
 	LegaPerson string `gorm:"column:lega_person" json:"lega_person"` //法定代表人
 	Phone      string `gorm:"column:phone" json:"phone"`
 	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
+	SchoolName string `gorm:"-" json:"school_name"`
 	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
 	CityID     int    `gorm:"column:city_id" json:"city_id"`
 	AreaID     int    `gorm:"column:area_id" json:"area_id"`

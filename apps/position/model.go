@@ -8,7 +8,7 @@ type Job struct {
 	EnterpriseInfo *user.Enterprise `gorm:"-" json:"enterprise_info"`
 	UserInfo       *user.User       `gorm:"-" json:"user_info"`
 	Name           string           `gorm:"column:name" json:"name"`
-	Type           string           `gorm:"column:type" json:"type"`
+	Type           int              `gorm:"column:type" json:"type"`
 	WorkingTime    string           `gorm:"column:working_time" json:"working_time"`
 	Place          string           `gorm:"column:place" json:"place"`
 	Salary         string           `gorm:"column:salary" json:"salary"`

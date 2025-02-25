@@ -42,6 +42,11 @@ func (h *handler) CreateJob(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
+	enterprise, err := h.svc.GetEnterpriseByUserID(ctx, utils.GetUserID(ctx))
+	if err != nil {
+		return
+	}
+	req.EnterpriseID = enterprise.ID
 
 	if utils.GetUserRole(ctx) != 3 && utils.GetUserRole(ctx) != 2 {
 		response.Error(ctx, result.DefaultError("无权限"))
@@ -75,6 +80,21 @@ func (h *handler) UpdateJob(ctx *gin.Context) {
 	return
 }
 
+func (h *handler) SetJobState(ctx *gin.Context) {
+	id := cast.ToInt(ctx.Param("id"))
+	if utils.GetUserRole(ctx) != 3 && utils.GetUserRole(ctx) != 2 {
+		response.Error(ctx, result.DefaultError("没有权限"))
+		return
+	}
+	state, err := h.svc.SetJobState(ctx, id)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect(state, ""))
+	return
+}
+
 func (h *handler) DeleteJob(ctx *gin.Context) {
 	id := cast.ToInt(ctx.Param("id"))
 	err := h.svc.DeleteJob(ctx, id)
@@ -89,6 +109,16 @@ func (h *handler) DeleteJob(ctx *gin.Context) {
 	response.Success(ctx, result.NewCorrect("删除成功", ""))
 }
 
+func (h *handler) GetJobByID(ctx *gin.Context) {
+	id := cast.ToInt(ctx.Param("id"))
+	re, err := h.svc.GetJobByID(ctx, id)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("获取成功", re))
+	return
+}
 func (h *handler) ListJobBySchoolID(ctx *gin.Context) {
 	var req response.Paging
 	err := ctx.ShouldBindQuery(&req)

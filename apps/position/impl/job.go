@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"errors"
 	"fmt"
 	"gitee.com/xygfm/authorization/apps/position"
 	"gitee.com/xygfm/authorization/apps/user"
@@ -12,7 +13,7 @@ import (
 func (i *impl) ListJob(ctx *gin.Context, req *response.Paging, enterpriseID int) ([]*position.Job, int64, error) {
 	limit := req.Size
 	offset := (req.Page - 1) * limit
-	var po []*position.Job
+	var pos []*position.Job
 	db := i.mdb.Model(&position.Job{}).
 		Where("enterprise_id = ?", enterpriseID)
 	if req.Search != "" {
@@ -27,12 +28,35 @@ func (i *impl) ListJob(ctx *gin.Context, req *response.Paging, enterpriseID int)
 	if limit != 0 {
 		db = db.Limit(limit).Offset(offset)
 	}
-	err = db.Order("id desc").Find(&po).Error
+	err = db.Order("id desc").Find(&pos).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	var enterpriseIDs []int
+	var enterprise []*user.Enterprise
+
+	for _, item := range pos {
+		enterpriseIDs = append(enterpriseIDs, item.EnterpriseID)
+	}
+	err = i.mdb.Model(&user.Enterprise{}).
+		Where("id IN (?)", enterpriseIDs).
+		Find(&enterprise).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return po, total, nil
+	enterpriseMAP := make(map[int]*user.Enterprise)
+	for _, item := range enterprise {
+		enterpriseMAP[item.ID] = item
+	}
+
+	for j, item := range pos {
+		if enterpriseInfo, ok := enterpriseMAP[item.EnterpriseID]; ok {
+			pos[j].EnterpriseInfo = enterpriseInfo
+		}
+	}
+
+	return pos, total, nil
 }
 func (i *impl) UpdateJob(ctx *gin.Context, req *position.Job) error {
 	i.mdb.Model(&position.Job{}).Where("id = ?", req.ID).
@@ -55,6 +79,7 @@ func (i *impl) UpdateJob(ctx *gin.Context, req *position.Job) error {
 }
 func (i *impl) CreateJob(ctx *gin.Context, req *position.Job) (*position.Job, error) {
 	req.CreatedAt = time.Now().UnixMilli()
+	req.State = -1
 	err := i.mdb.Model(&position.Job{}).Create(&req).Error
 	if err != nil {
 		return nil, err
@@ -67,6 +92,46 @@ func (i *impl) DeleteJob(ctx *gin.Context, id int) error {
 		return err
 	}
 	return nil
+}
+func (i *impl) GetJobByID(ctx *gin.Context, id int) (*position.Job, error) {
+	var po *position.Job
+	err := i.mdb.Model(&position.Job{}).Where("id = ?", id).First(&po).Error
+	if err != nil {
+		return nil, err
+	}
+	//var enterpriseInfo *user.Enterprise
+	//err = i.mdb.Model(&user.Enterprise{}).
+	//	Where("id = ?", po.EnterpriseID).
+	//	First(&enterpriseInfo).Error
+	//if err != nil {
+	//	return nil, err
+	//}
+	//po.EnterpriseInfo = enterpriseInfo
+	return po, nil
+}
+
+func (i *impl) SetJobState(ctx *gin.Context, id int) (string, error) {
+	var po *position.Job
+	err := i.mdb.Model(&position.Job{}).Where("id = ?", id).First(&po).Error
+	if err != nil {
+		return "", err
+	}
+	if po.State == 1 {
+		err = i.mdb.Model(&position.Job{}).Where("id = ?", id).Update("state", -1).Error
+		if err != nil {
+			return "", err
+		}
+		return "下架成功", nil
+	} else if po.State == -1 {
+		err = i.mdb.Model(&position.Job{}).Where("id = ?", id).Update("state", 0).Error
+		if err != nil {
+			return "", err
+		}
+		return "上架成功", nil
+	} else if po.State == 0 {
+		return "当前处于待审核", errors.New("等待审核")
+	}
+	return "", nil
 }
 
 func (i *impl) GetEnterpriseByUserID(ctx *gin.Context, userID int) (*user.Enterprise, error) {
@@ -86,6 +151,9 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	if schoolID != 0 {
 		db = db.Where("school_id = ?", schoolID)
 	}
+	if req.Search != "" {
+		db = db.Where("name LIKE ? OR post LIKE ?", "%"+req.Search+"%", "%"+req.Search+"%")
+	}
 	var total int64
 	err := db.Count(&total).Error
 	if err != nil {
@@ -98,6 +166,7 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	if err != nil {
 		return nil, 0, err
 	}
+
 	var enterpriseIDs []int
 	var enterprise []*user.Enterprise
 	var userIDs []int
@@ -128,9 +197,17 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	for _, item := range users {
 		userMAP[item.ID] = item
 	}
+	//for j, item := range pos {
+	//	pos[j].EnterpriseInfo = enterpriseMAP[item.EnterpriseID]
+	//	pos[j].UserInfo = userMAP[enterpriseMAP[item.EnterpriseID].UserID]
+	//}
 	for j, item := range pos {
-		pos[j].EnterpriseInfo = enterpriseMAP[item.EnterpriseID]
-		pos[j].UserInfo = userMAP[enterpriseMAP[item.EnterpriseID].UserID]
+		if enterpriseInfo, ok := enterpriseMAP[item.EnterpriseID]; ok {
+			pos[j].EnterpriseInfo = enterpriseInfo
+			if userInfo, ok := userMAP[enterpriseInfo.UserID]; ok {
+				pos[j].UserInfo = userInfo
+			}
+		}
 	}
 
 	return pos, total, nil
