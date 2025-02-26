@@ -133,7 +133,7 @@ func (i *impl) ListMessages(ctx *gin.Context, req *response.Paging, studentID in
 		db = db.Limit(limit).Offset(offset)
 	}
 	err = db.Order("created_at desc").Find(&pos).Error
-	return pos, 0, nil
+	return pos, total, nil
 }
 
 func (i *impl) ReadMessage(ctx *gin.Context, convID int, sender int) error {

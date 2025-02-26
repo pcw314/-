@@ -40,6 +40,7 @@ func (h *handler) HandleWebSocket(c *gin.Context) {
 			conn.Close()
 			break
 		}
+		msg.SenderID = userID
 		h.svc.HandleMessage(c, msg)
 	}
 }
@@ -89,8 +90,8 @@ func (h *handler) ListMessages(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	toUserID := cast.ToInt(ctx.Query("to_user_id"))
-	convID := cast.ToInt(ctx.Query("conv_id"))
+	toUserID := cast.ToInt(ctx.Param("to_user_id"))
+	convID := cast.ToInt(ctx.Param("conv_id"))
 	userID := utils.GetUserID(ctx)
 	err = h.svc.ReadMessage(ctx, convID, toUserID)
 	if utils.GetUserRole(ctx) == 1 {
