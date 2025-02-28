@@ -8,6 +8,8 @@ type Audit struct {
 	ID             int              `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
 	Reason         string           `gorm:"column:reason" json:"reason"`
 	Image          string           `gorm:"column:image" json:"image"`
+	StudentID      string           `gorm:"column:student_id" json:"student_id"`
+	StudentInfo    *user.Student    `gorm:"-" json:"student_info"`
 	EnterpriseID   int              `gorm:"column:enterprise_id" json:"enterprise_id"`
 	EnterpriseInfo *user.Enterprise `gorm:"-" json:"enterprise_info"`
 	JobID          int              `gorm:"column:job_id" json:"job_id"`

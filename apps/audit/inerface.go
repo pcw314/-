@@ -10,6 +10,7 @@ type Service interface {
 	UpdateAudit(ctx *gin.Context, req *Audit) error
 	CreateAudit(ctx *gin.Context, req *Audit) (*Audit, error)
 	DeleteAudit(ctx *gin.Context, id int) error
+	CreateAuditStudent(ctx *gin.Context, req *Audit) (*Audit, error)
 }
 
 type ServiceImpl struct{}
@@ -25,4 +26,7 @@ func (s *ServiceImpl) CreateAudit(ctx *gin.Context, req *Audit) (*Audit, error) 
 }
 func (s *ServiceImpl) DeleteAudit(ctx *gin.Context, id int) error {
 	return nil
+}
+func (s *ServiceImpl) CreateAuditStudent(ctx *gin.Context, req *Audit) (*Audit, error) {
+	return nil, nil
 }

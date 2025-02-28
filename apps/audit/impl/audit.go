@@ -126,6 +126,7 @@ func (i *impl) CreateAudit(ctx *gin.Context, req *audit.Audit) (*audit.Audit, er
 	}
 	return nil, nil
 }
+
 func (i *impl) DeleteAudit(ctx *gin.Context, id int) error {
 	err := i.mdb.Delete(&audit.Audit{}, "id = ?", id).Error
 	if err != nil {

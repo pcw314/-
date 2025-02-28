@@ -151,6 +151,19 @@ func (i *impl) ListStudent(ctx *gin.Context, req *response.Paging) ([]*user.Stud
 	if err != nil {
 		return nil, 0, err
 	}
+	var schoolIDs []int
+	var schoolInfo []place.School
+	for _, item := range pos {
+		schoolIDs = append(schoolIDs, item.SchoolID)
+	}
+	i.mdb.Model(&place.School{}).Where("id in (?)", schoolIDs).Find(&schoolInfo)
+	schoolMap := make(map[int]string)
+	for _, item := range schoolInfo {
+		schoolMap[item.ID] = item.Name
+	}
+	for j, item := range pos {
+		pos[j].SchoolName = schoolMap[item.SchoolID]
+	}
 	return pos, total, nil
 }
 func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.Enterprise, int64, error) {
@@ -177,6 +190,20 @@ func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.E
 	err = i.mdb.Model(&user.Enterprise{}).Where("user_id in (?)", ids).Find(&pos).Error
 	if err != nil {
 		return nil, 0, err
+	}
+
+	var schoolIDs []int
+	var schoolInfo []place.School
+	for _, item := range pos {
+		schoolIDs = append(schoolIDs, item.SchoolID)
+	}
+	i.mdb.Model(&place.School{}).Where("id in (?)", schoolIDs).Find(&schoolInfo)
+	schoolMap := make(map[int]string)
+	for _, item := range schoolInfo {
+		schoolMap[item.ID] = item.Name
+	}
+	for j, item := range pos {
+		pos[j].SchoolName = schoolMap[item.SchoolID]
 	}
 	return pos, total, nil
 }

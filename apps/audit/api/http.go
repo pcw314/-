@@ -35,6 +35,6 @@ func (h *handler) RegisterRoute(r gin.IRouter) error {
 	r.GET("/job/list", h.ListAuditJob)
 	r.PUT("/:id", h.UpdateAudit)
 	r.DELETE("/:id", h.DeleteAudit)
-	r.POST("", h.CreateAudit)
+	r.POST("/job", h.CreateAudit)
 	return nil
 }
