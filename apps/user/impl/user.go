@@ -222,10 +222,10 @@ func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.E
 	if err != nil {
 		return nil, 0, err
 	}
-	userStateMap := make(map[int]int)
+	userMap := make(map[int]*user.User)
 	for _, item := range userInfo {
 		ids = append(ids, item.ID)
-		userStateMap[item.ID] = item.State
+		userMap[item.ID] = item
 	}
 	var pos []*user.Enterprise
 	err = i.mdb.Model(&user.Enterprise{}).Where("user_id in (?)", ids).Find(&pos).Error
@@ -245,7 +245,8 @@ func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.E
 	}
 	for j, item := range pos {
 		pos[j].SchoolName = schoolMap[item.SchoolID]
-		pos[j].State = userStateMap[item.UserID]
+		pos[j].State = userMap[item.UserID].State
+		pos[j].Username = userMap[item.UserID].Username
 	}
 	return pos, total, nil
 }

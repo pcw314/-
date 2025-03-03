@@ -30,6 +30,27 @@ func (i *impl) ListSchool(ctx *gin.Context, req *response.Paging, area int) ([]*
 	if err != nil {
 		return nil, 0, err
 	}
+	var areaIDs []int
+	var areas []*place.Area
+	areaMap := make(map[int]string)
+	for _, item := range school {
+		areaIDs = append(areaIDs, item.AreaID)
+		areaIDs = append(areaIDs, item.ProvinceID)
+		areaIDs = append(areaIDs, item.CityID)
+	}
+	fmt.Println("areaIDs:", areaIDs)
+	err = i.mdb.Model(&place.Area{}).Select("id", "name").Where("id IN (?)", areaIDs).Find(&areas).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, item := range areas {
+		areaMap[item.ID] = item.Name
+	}
+	for j, item := range school {
+		school[j].Province = areaMap[item.ProvinceID]
+		school[j].City = areaMap[item.CityID]
+		school[j].Area = areaMap[item.AreaID]
+	}
 	return school, total, nil
 }
 func (i *impl) UpdateSchool(ctx *gin.Context, req place.School) error {

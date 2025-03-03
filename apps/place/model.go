@@ -23,8 +23,11 @@ type School struct {
 	ID         int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	Name       string `gorm:"column:name" json:"name"`
 	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
+	Province   string `gorm:"-" json:"province"`
 	CityID     int    `gorm:"column:city_id" json:"city_id"`
+	City       string `gorm:"-" json:"city"`
 	AreaID     int    `gorm:"column:area_id" json:"area_id"`
+	Area       string `gorm:"-" json:"area"`
 	State      int    `gorm:"column:state" json:"state"`
 	VisitNum   int    `gorm:"column:visit_num" json:"visit_num"`
 }
