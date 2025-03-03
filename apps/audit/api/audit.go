@@ -31,14 +31,14 @@ func (h *handler) ListAuditEnterprise(ctx *gin.Context) {
 	return
 }
 
-func (h *handler) ListAuditJob(ctx *gin.Context) {
+func (h *handler) ListAuditUser(ctx *gin.Context) {
 	var req response.Paging
 	err := ctx.ShouldBindQuery(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	if list, total, err := h.svc.ListAudit(ctx, &req, 2); err != nil {
+	if list, total, err := h.svc.ListAuditUser(ctx, &req); err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	} else {
@@ -53,17 +53,56 @@ func (h *handler) ListAuditJob(ctx *gin.Context) {
 	return
 }
 
-func (h *handler) CreateAudit(ctx *gin.Context) {
+func (h *handler) ListAuditJob(ctx *gin.Context) {
+	var req response.Paging
+	err := ctx.ShouldBindQuery(&req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	if list, total, err := h.svc.ListAuditJob(ctx, &req); err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	} else {
+		response.Success(ctx, result.NewCorrect("获取成功", response.Paging{
+			Size:   req.Size,
+			Page:   req.Page,
+			List:   list,
+			Total:  total,
+			Search: req.Search,
+		}))
+	}
+	return
+}
+
+func (h *handler) CreateAuditJob(ctx *gin.Context) {
+	JobID := cast.ToInt(ctx.Param("id"))
+	var req audit.Audit
+	err := ctx.ShouldBindJSON(&req)
+	req.JobID = JobID
+	req.Informer = utils.GetUserID(ctx)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	_, err = h.svc.CreateAudit(ctx, &req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("创建成功", ""))
+	return
+}
+func (h *handler) CreateAuditUser(ctx *gin.Context) {
+	userID := cast.ToInt(ctx.Param("id"))
 	var req audit.Audit
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-
-	if utils.GetUserRole(ctx) != 3 {
-		response.Error(ctx, result.DefaultError("无权限"))
-	}
+	req.UserID = userID
+	req.Informer = utils.GetUserID(ctx)
 	_, err = h.svc.CreateAudit(ctx, &req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))

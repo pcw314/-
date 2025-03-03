@@ -34,7 +34,7 @@ func (i *impl) Register(ctx *gin.Context, req *user.User) (*user.User, error) {
 		Where("username = ?", req.Username).
 		First(&user.User{}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.New("用户名已存在")
+		return nil, errors.New("账号已存在")
 	}
 	err = i.mdb.Model(&user.User{}).Create(&req).Error
 	if err != nil {
@@ -56,7 +56,19 @@ func (i *impl) CreateStudent(ctx *gin.Context, req *user.Student) (*user.Student
 
 func (i *impl) CreateEnterprise(ctx *gin.Context, req *user.Enterprise) (*user.Enterprise, error) {
 	req.CreatedAt = time.Now().UnixMilli()
+	req.UpdatedAt = time.Now().UnixMilli()
 	err := i.mdb.Model(&user.Enterprise{}).Create(&req).Error
+	if err != nil {
+		fmt.Println("err", err)
+		return nil, err
+	}
+	return req, nil
+}
+
+func (i *impl) CreateStaff(ctx *gin.Context, req *user.Staff) (*user.Staff, error) {
+	req.CreatedAt = time.Now().UnixMilli()
+	req.UpdatedAt = time.Now().UnixMilli()
+	err := i.mdb.Model(&user.Staff{}).Create(&req).Error
 	if err != nil {
 		fmt.Println("err", err)
 		return nil, err
@@ -100,10 +112,7 @@ func (i *impl) ListMenu(ctx context.Context, req *[]int) ([]*user.MenuRequest, e
 	return tree, nil
 }
 
-func (i *impl) ListStaff(ctx *gin.Context, req *response.Paging) ([]*user.User, int64, error) {
-	if utils.GetUserRole(ctx) != 3 {
-		return nil, 0, nil
-	}
+func (i *impl) ListStaff(ctx *gin.Context, req *response.Paging) ([]*user.StaffReply, int64, error) {
 	limit := req.Size
 	offset := (req.Page - 1) * limit
 	var pos []*user.User
@@ -123,14 +132,33 @@ func (i *impl) ListStaff(ctx *gin.Context, req *response.Paging) ([]*user.User, 
 	if err != nil {
 		return nil, 0, err
 	}
+	var ids []int
+	userInfoMap := make(map[int]*user.User)
+	for _, item := range pos {
+		ids = append(ids, item.ID)
+		userInfoMap[item.ID] = item
+	}
+	var staff []*user.StaffReply
+	err = i.mdb.Model(&user.Staff{}).Where("user_id in (?)", ids).Find(&staff).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(staff) == 0 {
+		return staff, total, nil
+	}
+	for j, item := range staff {
+		staff[j].State = userInfoMap[item.UserID].State
+		staff[j].Username = userInfoMap[item.UserID].Username
+	}
 
-	return pos, total, nil
+	return staff, total, nil
 }
 func (i *impl) ListStudent(ctx *gin.Context, req *response.Paging) ([]*user.Student, int64, error) {
 	limit := req.Size
 	offset := (req.Page - 1) * limit
-	var ids []*int
-	db := i.mdb.Model(&user.User{}).Select("id").Where("role = 1")
+	var ids []int
+	var userInfo []*user.User
+	db := i.mdb.Model(&user.User{}).Where("role = 1")
 	if req.Search != "" {
 		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
 	}
@@ -142,9 +170,14 @@ func (i *impl) ListStudent(ctx *gin.Context, req *response.Paging) ([]*user.Stud
 	if limit != 0 {
 		db = db.Limit(limit).Offset(offset)
 	}
-	err = db.Order("id desc").Find(&ids).Error
+	err = db.Order("id desc").Find(&userInfo).Error
 	if err != nil {
 		return nil, 0, err
+	}
+	userInfoMap := make(map[int]*user.User)
+	for _, item := range userInfo {
+		ids = append(ids, item.ID)
+		userInfoMap[item.ID] = item
 	}
 	var pos []*user.Student
 	err = i.mdb.Model(&user.Student{}).Where("user_id in (?)", ids).Find(&pos).Error
@@ -163,14 +196,17 @@ func (i *impl) ListStudent(ctx *gin.Context, req *response.Paging) ([]*user.Stud
 	}
 	for j, item := range pos {
 		pos[j].SchoolName = schoolMap[item.SchoolID]
+		pos[j].State = userInfoMap[item.UserID].State
+		pos[j].Username = userInfoMap[item.UserID].Username
 	}
 	return pos, total, nil
 }
 func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.Enterprise, int64, error) {
 	limit := req.Size
 	offset := (req.Page - 1) * limit
-	var ids []*int
-	db := i.mdb.Model(&user.User{}).Select("id").Where("role = 2")
+	var ids []int
+	var userInfo []*user.User
+	db := i.mdb.Model(&user.User{}).Where("role = 2")
 	if req.Search != "" {
 		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
 	}
@@ -182,9 +218,14 @@ func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.E
 	if limit != 0 {
 		db = db.Limit(limit).Offset(offset)
 	}
-	err = db.Order("id desc").Find(&ids).Error
+	err = db.Order("id desc").Find(&userInfo).Error
 	if err != nil {
 		return nil, 0, err
+	}
+	userStateMap := make(map[int]int)
+	for _, item := range userInfo {
+		ids = append(ids, item.ID)
+		userStateMap[item.ID] = item.State
 	}
 	var pos []*user.Enterprise
 	err = i.mdb.Model(&user.Enterprise{}).Where("user_id in (?)", ids).Find(&pos).Error
@@ -204,15 +245,29 @@ func (i *impl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*user.E
 	}
 	for j, item := range pos {
 		pos[j].SchoolName = schoolMap[item.SchoolID]
+		pos[j].State = userStateMap[item.UserID]
 	}
 	return pos, total, nil
 }
-func (i *impl) GetStaffByID(ctx *gin.Context, id int) (*user.User, error) {
-	var po *user.User
-	err := i.mdb.Model(&user.User{}).Where("id = ?", id).First(&po).Error
+func (i *impl) GetStaffByID(ctx *gin.Context, id int) (*user.StaffReply, error) {
+	var po *user.StaffReply
+	db := i.mdb.Model(&user.Staff{})
+	if id == 0 {
+		db = db.Where("user_id = ?", utils.GetUserID(ctx))
+	} else {
+		db = db.Where("id = ?", id)
+	}
+	err := db.First(&po).Error
 	if err != nil {
 		return nil, err
 	}
+	var userInfo *user.User
+	err = i.mdb.Model(&user.User{}).Where("id = ?", po.UserID).First(&userInfo).Error
+	if err != nil {
+		return nil, err
+	}
+	po.State = userInfo.State
+	po.Username = userInfo.Username
 	return po, nil
 }
 func (i *impl) GetEnterpriseByID(ctx *gin.Context, id int) (*user.Enterprise, error) {
@@ -245,6 +300,7 @@ func (i *impl) GetEnterpriseByID(ctx *gin.Context, id int) (*user.Enterprise, er
 		First(&name).Error
 	po.SchoolName = name
 	po.Username = userInfo.Username
+	po.State = userInfo.State
 	po.Role = userInfo.Role
 	return po, nil
 }
@@ -286,6 +342,7 @@ func (i *impl) GetStudentByID(ctx *gin.Context, id int) (*user.Student, error) {
 		First(&name).Error
 	po.SchoolName = name
 	po.Username = userInfo.Username
+	po.State = userInfo.State
 	po.Role = userInfo.Role
 	return po, nil
 }
@@ -316,6 +373,22 @@ func (i *impl) UpdateEnterprise(ctx *gin.Context, enterprise *user.Enterprise) (
 	}
 	return enterprise, nil
 }
+
+func (i *impl) UpdateStaff(ctx *gin.Context, req *user.CreatedStaff) (*user.StaffReply, error) {
+	err := i.mdb.Model(&user.Staff{}).
+		Where("id = ?", req.ID).
+		Updates(map[string]interface{}{
+			"name":       req.Name,
+			"Phone":      req.Phone,
+			"avatar":     req.Avatar,
+			"updated_at": time.Now().UnixMilli(),
+		}).Error
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 func (i *impl) UpdatePassword(ctx *gin.Context, id int, nowPassword, oldPassword string) error {
 	var po user.User
 	err := i.mdb.Model(&user.User{}).
@@ -379,6 +452,45 @@ func (i *impl) DeleteEnterprise(ctx *gin.Context, id int) error {
 	})
 	if err != nil {
 		return fmt.Errorf("transaction failed: %w", err)
+	}
+	return nil
+}
+
+// InitializePassword 初始化密码
+func (i *impl) InitializePassword(ctx *gin.Context, id int) error {
+	err := i.mdb.Model(&user.User{}).
+		Where("id = ?", id).
+		Update("password", utils.BcryptHash("123456")).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateUserState 更新用户状态
+func (i *impl) UpdateUserState(ctx *gin.Context, id int) error {
+	var state int
+	err := i.mdb.Model(&user.User{}).
+		Select("state").
+		Where("id = ?", id).
+		First(&state).Error
+	if err != nil {
+		return err
+	}
+	if state == 1 {
+		err = i.mdb.Model(&user.User{}).
+			Where("id = ?", id).
+			Update("state", -1).Error
+		if err != nil {
+			return err
+		}
+	} else if state == -1 {
+		err = i.mdb.Model(&user.User{}).
+			Where("id = ?", id).
+			Update("state", 1).Error
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

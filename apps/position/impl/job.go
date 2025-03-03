@@ -79,7 +79,7 @@ func (i *impl) UpdateJob(ctx *gin.Context, req *position.Job) error {
 }
 func (i *impl) CreateJob(ctx *gin.Context, req *position.Job) (*position.Job, error) {
 	req.CreatedAt = time.Now().UnixMilli()
-	req.State = -1
+	req.State = 0
 	err := i.mdb.Model(&position.Job{}).Create(&req).Error
 	if err != nil {
 		return nil, err

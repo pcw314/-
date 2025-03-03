@@ -11,19 +11,83 @@ import (
 	"time"
 )
 
-func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*audit.Audit, int64, error) {
+//	func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*audit.Audit, int64, error) {
+//		limit := req.Size
+//		offset := (req.Page - 1) * limit
+//		var po []*audit.Audit
+//		db := i.mdb.Model(&audit.Audit{})
+//		if req.Search != "" {
+//			db = db.Where("reason LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+//		}
+//		if role == 1 {
+//			db = db.Where("enterprise_id != 0")
+//		}
+//		if role == 2 {
+//			db = db.Where("job_id != 0")
+//		}
+//		var total int64
+//		err := db.Count(&total).Error
+//		if err != nil {
+//			return nil, 0, err
+//		}
+//		if limit != 0 {
+//			db = db.Limit(limit).Offset(offset)
+//		}
+//		err = db.Order("id desc").Find(&po).Error
+//		if err != nil {
+//			return nil, 0, err
+//		}
+//		if role == 1 {
+//			var enterpriseIDs []int
+//			for _, item := range po {
+//				enterpriseIDs = append(enterpriseIDs, item.UserID)
+//			}
+//			var enterprise []*user.Enterprise
+//			err = i.mdb.Model(&user.Enterprise{}).
+//				Where("id in (?)", enterpriseIDs).
+//				Find(&enterprise).Error
+//			if err != nil {
+//				return nil, 0, err
+//			}
+//			enterpriseMap := make(map[int]*user.Enterprise)
+//			for _, item := range enterprise {
+//				enterpriseMap[item.ID] = item
+//			}
+//			for j, item := range po {
+//				po[j].EnterpriseInfo = enterpriseMap[item.UserID]
+//			}
+//			return po, total, nil
+//		} else if role == 2 {
+//			var job []*audit.Job
+//			var jobIDs []int
+//			for _, item := range po {
+//				jobIDs = append(jobIDs, item.UserID)
+//			}
+//			err = i.mdb.Model(&audit.Job{}).
+//				Where("id in (?)", jobIDs).
+//				Find(&job).Error
+//			if err != nil {
+//				return nil, 0, err
+//			}
+//			jobMap := make(map[int]*audit.Job)
+//			for _, item := range job {
+//				jobMap[item.ID] = item
+//			}
+//			for j, item := range po {
+//				po[j].JobInfo = jobMap[item.JobID]
+//			}
+//			return po, total, nil
+//		}
+//
+//		return po, total, nil
+//	}
+func (i *impl) ListAuditUser(ctx *gin.Context, req *response.Paging) ([]*audit.Audit, int64, error) {
 	limit := req.Size
 	offset := (req.Page - 1) * limit
-	var po []*audit.Audit
-	db := i.mdb.Model(&audit.Audit{})
+	var pos []*audit.Audit
+	db := i.mdb.Model(&audit.Audit{}).Where("user_id != 0")
 	if req.Search != "" {
 		db = db.Where("reason LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
-	}
-	if role == 1 {
-		db = db.Where("enterprise_id != 0")
-	}
-	if role == 2 {
-		db = db.Where("job_id != 0")
 	}
 	var total int64
 	err := db.Count(&total).Error
@@ -33,53 +97,128 @@ func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*a
 	if limit != 0 {
 		db = db.Limit(limit).Offset(offset)
 	}
-	err = db.Order("id desc").Find(&po).Error
+	err = db.Order("id desc").Find(&pos).Error
 	if err != nil {
 		return nil, 0, err
 	}
-	if role == 1 {
-		var enterpriseIDs []int
-		for _, item := range po {
-			enterpriseIDs = append(enterpriseIDs, item.EnterpriseID)
+	var userIds []int
+	for _, item := range pos {
+		userIds = append(userIds, item.Informer)
+		userIds = append(userIds, item.UserID)
+	}
+	var enterprise []*user.Enterprise
+	err = i.mdb.Model(&user.Enterprise{}).
+		Where("user_id in (?)", userIds).
+		Find(&enterprise).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	userInfoMap := make(map[int]*audit.UserInfo)
+	for _, item := range enterprise {
+		userInfoMap[item.UserID] = &audit.UserInfo{
+			Name:   item.Name,
+			Phone:  item.Phone,
+			Avatar: item.Avatar,
 		}
-		var enterprise []*user.Enterprise
-		err = i.mdb.Model(&user.Enterprise{}).
-			Where("id in (?)", enterpriseIDs).
-			Find(&enterprise).Error
-		if err != nil {
-			return nil, 0, err
+	}
+	var student []*user.Student
+	err = i.mdb.Model(&user.Student{}).
+		Where("user_id in (?)", userIds).
+		Find(&student).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, item := range student {
+		userInfoMap[item.UserID] = &audit.UserInfo{
+			Name:   item.Name,
+			Phone:  item.Phone,
+			Avatar: item.Avatar,
 		}
-		enterpriseMap := make(map[int]*user.Enterprise)
-		for _, item := range enterprise {
-			enterpriseMap[item.ID] = item
+	}
+	if len(userInfoMap) == 0 {
+		return pos, total, nil
+	}
+	for j, item := range pos {
+		pos[j].InformerName = userInfoMap[item.Informer].Name
+		pos[j].Name = userInfoMap[item.UserID].Name
+		pos[j].Phone = userInfoMap[item.UserID].Phone
+		pos[j].Avatar = userInfoMap[item.UserID].Avatar
+	}
+	return pos, total, nil
+}
+func (i *impl) ListAuditJob(ctx *gin.Context, req *response.Paging) ([]*audit.Audit, int64, error) {
+	limit := req.Size
+	offset := (req.Page - 1) * limit
+	var pos []*audit.Audit
+	db := i.mdb.Model(&audit.Audit{}).Where("job_id != 0")
+	if req.Search != "" {
+		db = db.Where("reason LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+	}
+	var total int64
+	err := db.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	if limit != 0 {
+		db = db.Limit(limit).Offset(offset)
+	}
+	err = db.Order("id desc").Find(&pos).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	//var userIds []int
+	//for _, item := range po {
+	//	userIds = append(userIds, item.UserID)
+	//}
+	//var ids []int //Enterprise 的id
+	//err = i.mdb.Model(&user.Enterprise{}).Select("id").
+	//	Where("user_id in (?)", userIds).
+	//	Find(&ids).Error
+	//if err != nil {
+	//	return nil, 0, err
+	//}
+
+	var job []*audit.Job
+	var jobIDs []int
+	for _, item := range pos {
+		jobIDs = append(jobIDs, item.JobID)
+	}
+	err = i.mdb.Model(&audit.Job{}).
+		Where("id in (?)", jobIDs).
+		Find(&job).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	jobMap := make(map[int]*audit.Job)
+	for _, item := range job {
+		jobMap[item.ID] = item
+	}
+	var userIds []int
+	for _, item := range pos {
+		userIds = append(userIds, item.Informer)
+	}
+	var student []*user.Student
+	err = i.mdb.Model(&user.Student{}).
+		Where("user_id in (?)", userIds).
+		Find(&student).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	userInfoMap := make(map[int]*audit.UserInfo)
+	for _, item := range student {
+		userInfoMap[item.UserID] = &audit.UserInfo{
+			Name:   item.Name,
+			Phone:  item.Phone,
+			Avatar: item.Avatar,
 		}
-		for j, item := range po {
-			po[j].EnterpriseInfo = enterpriseMap[item.EnterpriseID]
-		}
-		return po, total, nil
-	} else if role == 2 {
-		var job []*audit.Job
-		var jobIDs []int
-		for _, item := range po {
-			jobIDs = append(jobIDs, item.EnterpriseID)
-		}
-		err = i.mdb.Model(&audit.Job{}).
-			Where("id in (?)", jobIDs).
-			Find(&job).Error
-		if err != nil {
-			return nil, 0, err
-		}
-		jobMap := make(map[int]*audit.Job)
-		for _, item := range job {
-			jobMap[item.ID] = item
-		}
-		for j, item := range po {
-			po[j].JobInfo = jobMap[item.JobID]
-		}
-		return po, total, nil
 	}
 
-	return po, total, nil
+	for j, item := range pos {
+		pos[j].JobInfo = jobMap[item.JobID]
+		pos[j].InformerName = userInfoMap[item.Informer].Name
+		pos[j].Avatar = userInfoMap[item.Informer].Avatar
+	}
+	return pos, total, nil
 }
 func (i *impl) UpdateAudit(ctx *gin.Context, req *audit.Audit) error {
 	// 开启事务
@@ -120,6 +259,7 @@ func (i *impl) UpdateAudit(ctx *gin.Context, req *audit.Audit) error {
 }
 func (i *impl) CreateAudit(ctx *gin.Context, req *audit.Audit) (*audit.Audit, error) {
 	req.CreatedAt = time.Now().UnixMilli()
+	req.UpdatedAt = time.Now().UnixMilli()
 	err := i.mdb.Model(&audit.Audit{}).Create(&req).Error
 	if err != nil {
 		return nil, err
@@ -133,4 +273,12 @@ func (i *impl) DeleteAudit(ctx *gin.Context, id int) error {
 		return err
 	}
 	return nil
+}
+
+func (i *impl) ListAuditJobInfo(ctx *gin.Context, req *response.Paging) ([]*position.Job, int64, error) {
+	db := i.mdb.Model(&position.Job{})
+	if req.Search != "" {
+		db = db.Where("reason LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+	}
+	return nil, 0, nil
 }

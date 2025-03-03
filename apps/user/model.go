@@ -10,6 +10,7 @@ type User struct {
 	Username string `gorm:"colum:username" json:"username"`
 	Password string `gorm:"colum:password" json:"password"`
 	Role     int    `gorm:"colum:role" json:"role"`
+	State    int    `gorm:"colum:state" json:"state"`
 }
 
 func (User) TableName() string {
@@ -48,7 +49,7 @@ func (MenuRequest) TableName() string {
 type Student struct {
 	ID         int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	Name       string `gorm:"column:name" json:"name"`
-	Sex        int8   `gorm:"column:sex" json:"sex"`
+	Sex        int    `gorm:"column:sex" json:"sex"`
 	Age        int    `gorm:"column:age" json:"age"`
 	Major      string `gorm:"column:major" json:"major"` //专业
 	Phone      string `gorm:"column:phone" json:"phone"` //手机号
@@ -58,13 +59,26 @@ type Student struct {
 	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
 	CityID     int    `gorm:"column:city_id" json:"city_id"`
 	AreaID     int    `gorm:"column:area_id" json:"area_id"`
+	Avatar     string `gorm:"colum:avatar" json:"avatar"`
 	Username   string `gorm:"-" json:"username"`
 	Role       int    `gorm:"-" json:"role"`
-	Avatar     string `gorm:"colum:avatar" json:"avatar"`
+	State      int    `gorm:"_" json:"state"`
 }
 
 func (Student) TableName() string {
 	return "students"
+}
+
+type CreatedStudent struct {
+	Name     string `gorm:"column:name" json:"name"`
+	Sex      int    `gorm:"column:sex" json:"sex"`
+	Age      int    `gorm:"column:age" json:"age"`
+	Major    string `gorm:"column:major" json:"major"` //专业
+	Phone    string `gorm:"column:phone" json:"phone"` //手机号
+	SchoolID int    `gorm:"column:school_id" json:"school_id"`
+	Username string `gorm:"-" json:"username"`
+	Password string `gorm:"-" json:"password"`
+	Avatar   string `gorm:"colum:avatar" json:"avatar"`
 }
 
 type Enterprise struct {
@@ -77,7 +91,7 @@ type Enterprise struct {
 	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
 	CityID     int    `gorm:"column:city_id" json:"city_id"`
 	AreaID     int    `gorm:"column:area_id" json:"area_id"`
-	State      int8   `gorm:"column:state" json:"state"`
+	State      int    `gorm:"_" json:"state"`
 	CreatedAt  int64  `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt  int64  `gorm:"column:updated_at" json:"updated_at"`
 	UserID     int    `gorm:"column:user_id" json:"user_id"`
@@ -88,6 +102,56 @@ type Enterprise struct {
 
 func (Enterprise) TableName() string {
 	return "enterprises"
+}
+
+type CreatedEnterprise struct {
+	Name       string `gorm:"column:name" json:"name"`
+	LegaPerson string `gorm:"column:lega_person" json:"lega_person"` //法定代表人
+	Phone      string `gorm:"column:phone" json:"phone"`
+	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
+	Username   string `gorm:"-" json:"username"`
+	Password   string `gorm:"-" json:"password"`
+	Avatar     string `gorm:"colum:avatar" json:"avatar"`
+}
+
+type Staff struct {
+	ID        int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name      string `gorm:"column:name" json:"name"`
+	Phone     string `gorm:"column:phone" json:"phone"`
+	Avatar    string `gorm:"colum:avatar" json:"avatar"`
+	CreatedAt int64  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt int64  `gorm:"column:updated_at" json:"updated_at"`
+	UserID    int    `gorm:"column:user_id" json:"user_id"`
+}
+
+func (Staff) TableName() string {
+	return "staffs"
+}
+
+type StaffReply struct {
+	ID        int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name      string `gorm:"column:name" json:"name"`
+	Phone     string `gorm:"column:phone" json:"phone"`
+	Avatar    string `gorm:"colum:avatar" json:"avatar"`
+	CreatedAt int64  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt int64  `gorm:"column:updated_at" json:"updated_at"`
+	UserID    int    `gorm:"column:user_id" json:"user_id"`
+	Username  string `gorm:"-" json:"username"`
+	Role      int    `gorm:"-" json:"role"`
+	State     int    `gorm:"-" json:"state"`
+}
+
+func (StaffReply) TableName() string {
+	return "staffs"
+}
+
+type CreatedStaff struct {
+	ID       int    `gorm:"-" json:"id"`
+	Name     string `gorm:"column:name" json:"name"`
+	Phone    string `gorm:"column:phone" json:"phone"` //手机号
+	Username string `gorm:"-" json:"username"`
+	Password string `gorm:"-" json:"password"`
+	Avatar   string `gorm:"colum:avatar" json:"avatar"`
 }
 
 type UpdatePasswordRequest struct {
@@ -111,6 +175,71 @@ func (f *Enterprise) BeforeUpdate(tx *gorm.DB) (err error) {
 // AfterFind 在查询之后执行的函数
 func (f *Enterprise) AfterFind(tx *gorm.DB) (err error) {
 	api := utils.GetApiByType("file")
-	f.Avatar = api.Url + f.Avatar
+	if f.Avatar != "" {
+		f.Avatar = api.Url + f.Avatar
+	}
+	return
+}
+
+// BeforeCreate 在创建之前执行的函数
+func (f *CreatedStudent) BeforeCreate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// BeforeCreate 在创建之前执行的函数
+func (f *CreatedEnterprise) BeforeCreate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// BeforeCreate 在创建之前执行的函数
+func (f *Student) BeforeCreate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// BeforeUpdate 在更新之前执行的函数
+func (f *Student) BeforeUpdate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// AfterFind 在查询之后执行的函数
+func (f *Student) AfterFind(tx *gorm.DB) (err error) {
+	api := utils.GetApiByType("file")
+	if f.Avatar != "" {
+		f.Avatar = api.Url + f.Avatar
+	}
+	return
+}
+
+// BeforeCreate 在创建之前执行的函数
+func (f *Staff) BeforeCreate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// BeforeUpdate 在更新之前执行的函数
+func (f *Staff) BeforeUpdate(tx *gorm.DB) (err error) {
+	f.Avatar = utils.RemoveDomainName(f.Avatar)
+	return
+}
+
+// AfterFind 在查询之后执行的函数
+func (f *Staff) AfterFind(tx *gorm.DB) (err error) {
+	api := utils.GetApiByType("file")
+	if f.Avatar != "" {
+		f.Avatar = api.Url + f.Avatar
+	}
+	return
+}
+
+// AfterFind 在查询之后执行的函数
+func (f *StaffReply) AfterFind(tx *gorm.DB) (err error) {
+	api := utils.GetApiByType("file")
+	if f.Avatar != "" {
+		f.Avatar = api.Url + f.Avatar
+	}
 	return
 }

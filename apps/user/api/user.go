@@ -21,12 +21,13 @@ func (h *handler) Login(ctx *gin.Context) {
 }
 
 func (h *handler) CreateStaff(ctx *gin.Context) {
-	var req user.User
+	var req user.CreatedStaff
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
+	fmt.Println("42342312", utils.GetUserRole(ctx))
 	if utils.GetUserRole(ctx) != 3 {
 		response.Error(ctx, result.DefaultError("无权限"))
 		return
@@ -37,54 +38,102 @@ func (h *handler) CreateStaff(ctx *gin.Context) {
 	} else {
 		req.Password = utils.BcryptHash(req.Password)
 	}
-	req.Role = 3
-	_, err = h.svc.Register(ctx, &req)
+
+	u, err := h.svc.Register(ctx, &user.User{
+		Username: req.Username,
+		Password: req.Password,
+		Role:     3,
+		State:    1,
+	})
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	response.Success(ctx, result.NewCorrect("创建成功", ""))
+
+	_, err = h.svc.CreateStaff(ctx, &user.Staff{
+		UserID: u.ID,
+		Name:   req.Name,
+		Phone:  req.Phone,
+		Avatar: req.Avatar,
+	})
+	if err != nil {
+		err = h.svc.DeleteStaff(ctx, u.ID)
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("创建员工成功", ""))
 	return
 }
 
 func (h *handler) CreateStudent(ctx *gin.Context) {
-	var req user.User
+	var req user.CreatedStudent
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	u, err := h.svc.Register(ctx, &req)
+	var userInfo user.User
+	userInfo.Username = req.Username
+	userInfo.Password = utils.BcryptHash(req.Password)
+	userInfo.Role = 1
+	userInfo.State = 1
+	u, err := h.svc.Register(ctx, &userInfo)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	_, err = h.svc.CreateStudent(ctx, &user.Student{UserID: u.ID})
-	if err != nil {
-		response.Error(ctx, result.DefaultError(err.Error()))
-		return
-	}
-	response.Success(ctx, result.NewCorrect("注册成功", ""))
-	return
 
+	_, err = h.svc.CreateStudent(ctx, &user.Student{
+		UserID:   u.ID,
+		Name:     req.Name,
+		Sex:      req.Sex,
+		Age:      req.Age,
+		Major:    req.Major,
+		Phone:    req.Phone,
+		SchoolID: req.SchoolID,
+		Avatar:   req.Avatar,
+	})
+	if err != nil {
+		err = h.svc.DeleteStaff(ctx, u.ID)
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("创建学生成功", ""))
+	return
 }
 func (h *handler) CreateEnterprise(ctx *gin.Context) {
-	var req user.User
+	var req user.CreatedEnterprise
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	u, err := h.svc.Register(ctx, &req)
+	userInfo := user.User{
+		Username: req.Username,
+		Password: utils.BcryptHash(req.Password),
+		Role:     2,
+		State:    1,
+	}
+	u, err := h.svc.Register(ctx, &userInfo)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	_, err = h.svc.CreateEnterprise(ctx, &user.Enterprise{UserID: u.ID})
+	_, err = h.svc.CreateEnterprise(ctx, &user.Enterprise{
+		UserID:     u.ID,
+		Name:       req.Name,
+		LegaPerson: req.LegaPerson,
+		Phone:      req.Phone,
+		SchoolID:   req.SchoolID,
+		Avatar:     req.Avatar,
+	})
 	if err != nil {
+		err = h.svc.DeleteStaff(ctx, u.ID)
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
+	response.Success(ctx, result.NewCorrect("创建商户成功", ""))
+	return
 }
 func (h *handler) Register(ctx *gin.Context) {
 	var req user.User
@@ -207,9 +256,9 @@ func (h *handler) ListStaff(ctx *gin.Context) {
 
 func (h *handler) GetStaff(ctx *gin.Context) {
 	id := cast.ToInt(ctx.Param("id"))
-	if utils.GetUserID(ctx) != 1 && utils.GetUserID(ctx) != id {
-		response.Error(ctx, result.DefaultError("无权限"))
-	}
+	//if utils.GetUserID(ctx) != 1 && utils.GetUserID(ctx) != id {
+	//	response.Error(ctx, result.DefaultError("无权限"))
+	//}
 	re, err := h.svc.GetStaffByID(ctx, id)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
@@ -279,6 +328,23 @@ func (h *handler) UpdateEnterprise(ctx *gin.Context) {
 	response.Success(ctx, result.NewCorrect("修改成功", ""))
 }
 
+func (h *handler) UpdateStaff(ctx *gin.Context) {
+	id := cast.ToInt(ctx.Param("id"))
+	var staff *user.CreatedStaff
+	err := ctx.ShouldBindJSON(&staff)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	staff.ID = id
+	_, err = h.svc.UpdateStaff(ctx, staff)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("修改成功", ""))
+}
+
 func (h *handler) UpdatePassword(ctx *gin.Context) {
 	id := cast.ToInt(ctx.Param("id"))
 	var password user.UpdatePasswordRequest
@@ -327,4 +393,32 @@ func (h *handler) DeleteStaff(ctx *gin.Context) {
 		return
 	}
 	response.Success(ctx, result.NewCorrect("删除成功", ""))
+}
+
+func (h *handler) InitializePassword(ctx *gin.Context) {
+	id := cast.ToInt(ctx.Param("id"))
+	if utils.GetUserRole(ctx) != 3 {
+		response.Error(ctx, result.DefaultError("错误"))
+		return
+	}
+	err := h.svc.InitializePassword(ctx, id)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("密码初始化成功", ""))
+}
+
+func (h *handler) UpdateUserState(ctx *gin.Context) {
+	id := cast.ToInt(ctx.Param("id"))
+	if utils.GetUserRole(ctx) != 3 {
+		response.Error(ctx, result.DefaultError("错误"))
+		return
+	}
+	err := h.svc.UpdateUserState(ctx, id)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("状态修改成功", ""))
 }

@@ -125,7 +125,6 @@ func (i *impl) DeleteCollect(ctx *gin.Context, id int) error {
 		Delete(&position.Collect{}).Error; err != nil {
 		return err
 	}
-
 	// 如果删除成功，返回 nil
 	return nil
 }

@@ -15,16 +15,18 @@ type Service interface {
 	CreateStudent(ctx *gin.Context, req *Student) (*Student, error)
 	// CreateEnterprise 创建商户信息
 	CreateEnterprise(ctx *gin.Context, req *Enterprise) (*Enterprise, error)
+	// CreateStaff 创建员工信息
+	CreateStaff(ctx *gin.Context, req *Staff) (*Staff, error)
 	// ListMenu 根据权限id数字，获取菜单目录
 	ListMenu(ctx context.Context, req *[]int) ([]*MenuRequest, error)
 	// ListStaff 获取员工列表
-	ListStaff(ctx *gin.Context, req *response.Paging) ([]*User, int64, error)
+	ListStaff(ctx *gin.Context, req *response.Paging) ([]*StaffReply, int64, error)
 	// ListStudent 获取学生列表
 	ListStudent(ctx *gin.Context, req *response.Paging) ([]*Student, int64, error)
 	// ListEnterprise 获取商户列表
 	ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*Enterprise, int64, error)
 	// GetStaffByID 根据id获取员工信息
-	GetStaffByID(ctx *gin.Context, id int) (*User, error)
+	GetStaffByID(ctx *gin.Context, id int) (*StaffReply, error)
 	// GetStudentByID 根据id获取学生信息
 	GetStudentByID(ctx *gin.Context, id int) (*Student, error)
 	// GetEnterpriseByID 根据id获取商户信息
@@ -32,10 +34,13 @@ type Service interface {
 	GetEnterpriseByUserID(ctx *gin.Context, userID int) (*Enterprise, error)
 	UpdateStudent(ctx *gin.Context, req *Student) (*Student, error)
 	UpdateEnterprise(ctx *gin.Context, req *Enterprise) (*Enterprise, error)
+	UpdateStaff(ctx *gin.Context, req *CreatedStaff) (*StaffReply, error)
 	UpdatePassword(ctx *gin.Context, id int, nowPassword, oldPassword string) error
 	DeleteStudent(ctx *gin.Context, id int) error
 	DeleteEnterprise(ctx *gin.Context, id int) error
 	DeleteStaff(ctx *gin.Context, id int) error
+	InitializePassword(ctx *gin.Context, id int) error
+	UpdateUserState(ctx *gin.Context, id int) error
 }
 
 type ServiceImpl struct{}
@@ -55,11 +60,15 @@ func (s *ServiceImpl) CreateEnterprise(ctx *gin.Context, req *Enterprise) (*Ente
 	return nil, nil
 }
 
+func (s *ServiceImpl) CreateStaff(ctx *gin.Context, req *Staff) (*Staff, error) {
+	return nil, nil
+}
+
 func (s *ServiceImpl) ListMenu(ctx context.Context, req *[]int) ([]*MenuRequest, error) {
 	return nil, nil
 }
 
-func (s *ServiceImpl) ListStaff(ctx *gin.Context, req *[]int) ([]*User, int64, error) {
+func (s *ServiceImpl) ListStaff(ctx *gin.Context, req *response.Paging) ([]*StaffReply, int64, error) {
 	return nil, 0, nil
 }
 
@@ -69,7 +78,7 @@ func (s *ServiceImpl) ListStudent(ctx *gin.Context, req *response.Paging) ([]*St
 func (s *ServiceImpl) ListEnterprise(ctx *gin.Context, req *response.Paging) ([]*Enterprise, int64, error) {
 	return nil, 0, nil
 }
-func (s *ServiceImpl) GetStaffByID(ctx *gin.Context, id int) (*User, error) {
+func (s *ServiceImpl) GetStaffByID(ctx *gin.Context, id int) (*StaffReply, error) {
 	return nil, nil
 }
 func (s *ServiceImpl) GetStudentByID(ctx *gin.Context, id int) (*Student, error) {
@@ -88,9 +97,15 @@ func (s *ServiceImpl) UpdateStudent(ctx *gin.Context, req *Student) (*Student, e
 func (s *ServiceImpl) UpdateEnterprise(ctx *gin.Context, req *Enterprise) (*Enterprise, error) {
 	return nil, nil
 }
+
+func (s *ServiceImpl) UpdateStaff(ctx *gin.Context, req *CreatedStaff) (*StaffReply, error) {
+	return nil, nil
+}
+
 func (s *ServiceImpl) UpdatePassword(ctx *gin.Context, id int, nowPassword, oldPassword string) error {
 	return nil
 }
+
 func (s *ServiceImpl) DeleteStudent(ctx *gin.Context, id int) error {
 	return nil
 }
@@ -99,5 +114,11 @@ func (s *ServiceImpl) DeleteEnterprise(ctx *gin.Context, id int) error {
 	return nil
 }
 func (s *ServiceImpl) DeleteStaff(ctx *gin.Context, id int) error {
+	return nil
+}
+func (s *ServiceImpl) InitializePassword(ctx *gin.Context, id int) error {
+	return nil
+}
+func (s *ServiceImpl) UpdateUserState(ctx *gin.Context, id int) error {
 	return nil
 }
