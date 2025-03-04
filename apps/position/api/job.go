@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func (h *handler) ListAuditJob(ctx *gin.Context) {
+func (h *handler) ListJob(ctx *gin.Context) {
 	var req response.Paging
 	err := ctx.ShouldBindQuery(&req)
 	if err != nil {
@@ -140,5 +140,47 @@ func (h *handler) ListJobBySchoolID(ctx *gin.Context) {
 			Search: req.Search,
 		}))
 	}
+	return
+}
+
+func (h *handler) ListAuditJob(ctx *gin.Context) {
+	var req position.AuditJobRequest
+	err := ctx.ShouldBindQuery(&req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	if list, total, err := h.svc.ListAuditJob(ctx, &req); err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	} else {
+		response.Success(ctx, result.NewCorrect("获取成功", response.Paging{
+			Size:   req.Size,
+			Page:   req.Page,
+			List:   list,
+			Total:  total,
+			Search: req.Search,
+		}))
+	}
+	return
+}
+
+func (h *handler) UpdateJobState(ctx *gin.Context) {
+	var req position.UpdateAuditJob
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+	}
+	req.ID = cast.ToInt(ctx.Param("id"))
+	if utils.GetUserRole(ctx) != 3 {
+		response.Error(ctx, result.DefaultError("没有权限"))
+		return
+	}
+	err = h.svc.AuditJob(ctx, &req)
+	if err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("审核成功", ""))
 	return
 }

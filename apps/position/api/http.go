@@ -32,11 +32,13 @@ func (h *handler) RegisterRoute(r gin.IRouter) error {
 	// 登录不进行任何中间件校验
 	r.Use(service.Security())
 	//获取商户招聘信息
-	r.GET("/list", h.ListAuditJob)
+	r.GET("/list", h.ListJob)
 	r.GET("/list/:school_id", h.ListJobBySchoolID)
 	r.GET("/:id", h.GetJobByID)
 	r.PUT("/:id", h.UpdateJob)
 	r.PUT("/putaway/:id", h.SetJobState)
+	r.GET("/audit/list", h.ListAuditJob)
+	r.PUT("/audit/:id", h.UpdateJobState)
 	r.DELETE("/:id", h.DeleteJob)
 	r.POST("", h.CreateJob)
 	collect := r.Group("/collect")

@@ -79,6 +79,7 @@ func (i *impl) UpdateJob(ctx *gin.Context, req *position.Job) error {
 }
 func (i *impl) CreateJob(ctx *gin.Context, req *position.Job) (*position.Job, error) {
 	req.CreatedAt = time.Now().UnixMilli()
+	req.UpdatedAt = time.Now().UnixMilli()
 	req.State = 0
 	err := i.mdb.Model(&position.Job{}).Create(&req).Error
 	if err != nil {
@@ -227,4 +228,66 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	}
 
 	return pos, total, nil
+}
+
+func (i *impl) ListAuditJob(ctx *gin.Context, req *position.AuditJobRequest) ([]*position.Job, int64, error) {
+	limit := req.Size
+	offset := (req.Page - 1) * limit
+	var pos []*position.Job
+	db := i.mdb.Model(&position.Job{}).
+		Where("state = ?", req.State)
+	if req.Search != "" {
+		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+	}
+	var total int64
+	err := db.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	if limit != 0 {
+		db = db.Limit(limit).Offset(offset)
+	}
+	err = db.Order("id desc").Find(&pos).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	var enterpriseIDs []int
+	var enterprise []*user.Enterprise
+
+	for _, item := range pos {
+		enterpriseIDs = append(enterpriseIDs, item.EnterpriseID)
+	}
+	err = i.mdb.Model(&user.Enterprise{}).
+		Where("id IN (?)", enterpriseIDs).
+		Find(&enterprise).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	enterpriseMAP := make(map[int]*user.Enterprise)
+	for _, item := range enterprise {
+		enterpriseMAP[item.ID] = item
+	}
+
+	for j, item := range pos {
+		if enterpriseInfo, ok := enterpriseMAP[item.EnterpriseID]; ok {
+			pos[j].EnterpriseInfo = enterpriseInfo
+		}
+	}
+
+	return pos, total, nil
+}
+
+func (i *impl) AuditJob(ctx *gin.Context, req *position.UpdateAuditJob) error {
+	err := i.mdb.Model(&position.Job{}).
+		Where("id = ?", req.ID).
+		Updates(map[string]interface{}{
+			"state":      req.State,
+			"reply":      req.Reply,
+			"updated_at": time.Now().UnixMilli(),
+		}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -18,6 +18,8 @@ type Service interface {
 	CreateCollect(ctx *gin.Context, collect Collect) (*Collect, error)
 	DeleteCollect(ctx *gin.Context, id int) error
 	ListJobBySchoolID(ctx *gin.Context, req *response.Paging, id int) ([]*Job, int64, error)
+	ListAuditJob(ctx *gin.Context, req *AuditJobRequest) ([]*Job, int64, error)
+	AuditJob(ctx *gin.Context, req *UpdateAuditJob) error
 }
 
 type ServiceImpl struct{}
@@ -54,4 +56,10 @@ func (s *ServiceImpl) DeleteCollect(ctx *gin.Context, id int) error {
 }
 func (s *ServiceImpl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, id int) ([]*Job, int64, error) {
 	return nil, 0, nil
+}
+func (s *ServiceImpl) ListAuditJob(ctx *gin.Context, req *AuditJobRequest) ([]*Job, int64, error) {
+	return nil, 0, nil
+}
+func (s *ServiceImpl) AuditJob(ctx *gin.Context, req *UpdateAuditJob) error {
+	return nil
 }

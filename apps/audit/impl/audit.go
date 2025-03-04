@@ -11,76 +11,28 @@ import (
 	"time"
 )
 
-//	func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*audit.Audit, int64, error) {
-//		limit := req.Size
-//		offset := (req.Page - 1) * limit
-//		var po []*audit.Audit
-//		db := i.mdb.Model(&audit.Audit{})
-//		if req.Search != "" {
-//			db = db.Where("reason LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
-//		}
-//		if role == 1 {
-//			db = db.Where("enterprise_id != 0")
-//		}
-//		if role == 2 {
-//			db = db.Where("job_id != 0")
-//		}
-//		var total int64
-//		err := db.Count(&total).Error
-//		if err != nil {
-//			return nil, 0, err
-//		}
-//		if limit != 0 {
-//			db = db.Limit(limit).Offset(offset)
-//		}
-//		err = db.Order("id desc").Find(&po).Error
-//		if err != nil {
-//			return nil, 0, err
-//		}
-//		if role == 1 {
-//			var enterpriseIDs []int
-//			for _, item := range po {
-//				enterpriseIDs = append(enterpriseIDs, item.UserID)
-//			}
-//			var enterprise []*user.Enterprise
-//			err = i.mdb.Model(&user.Enterprise{}).
-//				Where("id in (?)", enterpriseIDs).
-//				Find(&enterprise).Error
-//			if err != nil {
-//				return nil, 0, err
-//			}
-//			enterpriseMap := make(map[int]*user.Enterprise)
-//			for _, item := range enterprise {
-//				enterpriseMap[item.ID] = item
-//			}
-//			for j, item := range po {
-//				po[j].EnterpriseInfo = enterpriseMap[item.UserID]
-//			}
-//			return po, total, nil
-//		} else if role == 2 {
-//			var job []*audit.Job
-//			var jobIDs []int
-//			for _, item := range po {
-//				jobIDs = append(jobIDs, item.UserID)
-//			}
-//			err = i.mdb.Model(&audit.Job{}).
-//				Where("id in (?)", jobIDs).
-//				Find(&job).Error
-//			if err != nil {
-//				return nil, 0, err
-//			}
-//			jobMap := make(map[int]*audit.Job)
-//			for _, item := range job {
-//				jobMap[item.ID] = item
-//			}
-//			for j, item := range po {
-//				po[j].JobInfo = jobMap[item.JobID]
-//			}
-//			return po, total, nil
-//		}
-//
-//		return po, total, nil
-//	}
+func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, userID int) ([]*audit.Audit, int64, error) {
+	limit := req.Size
+	offset := (req.Page - 1) * limit
+	var pos []*audit.Audit
+	db := i.mdb.Model(&audit.Audit{}).Where("informer = ?", userID)
+	if req.Search != "" {
+		db = db.Where("reason LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+	}
+	var total int64
+	err := db.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	if limit != 0 {
+		db = db.Limit(limit).Offset(offset)
+	}
+	err = db.Order("id desc").Find(&pos).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return pos, total, nil
+}
 func (i *impl) ListAuditUser(ctx *gin.Context, req *response.Paging) ([]*audit.Audit, int64, error) {
 	limit := req.Size
 	offset := (req.Page - 1) * limit

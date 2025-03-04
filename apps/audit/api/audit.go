@@ -9,14 +9,14 @@ import (
 	"github.com/spf13/cast"
 )
 
-func (h *handler) ListAuditEnterprise(ctx *gin.Context) {
+func (h *handler) ListAudit(ctx *gin.Context) {
 	var req response.Paging
 	err := ctx.ShouldBindQuery(&req)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	if list, total, err := h.svc.ListAudit(ctx, &req, 1); err != nil {
+	if list, total, err := h.svc.ListAudit(ctx, &req, utils.GetUserID(ctx)); err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	} else {

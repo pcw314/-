@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*Audit, int64, error)
+	ListAudit(ctx *gin.Context, req *response.Paging, userID int) ([]*Audit, int64, error)
 	ListAuditUser(ctx *gin.Context, req *response.Paging) ([]*Audit, int64, error)
 	ListAuditJob(ctx *gin.Context, req *response.Paging) ([]*Audit, int64, error)
 	ListAuditJobInfo(ctx *gin.Context, req *response.Paging) ([]*position.Job, int64, error)
@@ -19,7 +19,7 @@ type Service interface {
 
 type ServiceImpl struct{}
 
-func (s *ServiceImpl) ListAudit(ctx *gin.Context, req *response.Paging, role int) ([]*Audit, int64, error) {
+func (s *ServiceImpl) ListAudit(ctx *gin.Context, req *response.Paging, userID int) ([]*Audit, int64, error) {
 	return nil, 0, nil
 }
 func (s *ServiceImpl) UpdateAudit(ctx *gin.Context, req *Audit) error {

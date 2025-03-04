@@ -1,6 +1,9 @@
 package position
 
-import "gitee.com/xygfm/authorization/apps/user"
+import (
+	"gitee.com/xygfm/authorization/apps/user"
+	"gitee.com/xygfm/authorization/response"
+)
 
 type Job struct {
 	ID             int              `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
@@ -37,4 +40,15 @@ type Collect struct {
 
 func (Collect) TableName() string {
 	return "collects"
+}
+
+type AuditJobRequest struct {
+	response.Paging
+	State int `json:"state" form:"state"`
+}
+
+type UpdateAuditJob struct {
+	ID    int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	State int    `gorm:"-" json:"state"`
+	Reply string `gorm:"-" json:"reply"`
 }
