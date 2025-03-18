@@ -82,3 +82,15 @@ func (h *handler) ListArea(ctx *gin.Context) {
 	response.Success(ctx, result.NewCorrect("获取区域列表", area))
 	return
 }
+
+func (h *handler) GetStatistics(ctx *gin.Context) {
+	if utils.GetUserRole(ctx) != 3 {
+		response.Error(ctx, result.DefaultError("无权限"))
+		return
+	}
+	statistics, err := h.svc.GetStatistics(ctx)
+	if err != nil {
+		return
+	}
+	response.Success(ctx, result.NewCorrect("成功获取统计数据", statistics))
+}

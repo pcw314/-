@@ -3,7 +3,7 @@ package api
 import (
 	"gitee.com/xygfm/authorization/apps/message"
 	"gitee.com/xygfm/authorization/ioc"
-	"gitee.com/xygfm/authorization/middleware"
+	service "gitee.com/xygfm/authorization/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,7 +29,7 @@ func (h *handler) Name() string {
 }
 
 func (h *handler) RegisterRoute(r gin.IRouter) error {
-	r.Use(service.Security())
+	r.Use(service.Ws())
 	r.GET("/ws", h.HandleWebSocket)
 	r.GET("/ws/message/:to_user_id/list/:conv_id", h.ListMessages)
 	r.GET("/ws/conversation/list", h.ListConversation)

@@ -20,6 +20,21 @@ func Security() gin.HandlerFunc {
 	}
 }
 
+func Ws() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token, _ := ctx.GetQuery("token")
+		claims, err := ParseToken(token)
+		if err != nil {
+			response.Fail(ctx, http.StatusUnauthorized, "Token校验失败")
+			ctx.Abort()
+			return
+		}
+		ctx.Set("claims", claims)
+		ctx.Next()
+		return
+	}
+}
+
 //func Security() gin.HandlerFunc {
 //	return func(ctx *gin.Context) {
 //		// 打印所有请求头

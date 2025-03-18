@@ -91,10 +91,29 @@ func (i *impl) ListAuditUser(ctx *gin.Context, req *response.Paging) ([]*audit.A
 		return pos, total, nil
 	}
 	for j, item := range pos {
-		pos[j].InformerName = userInfoMap[item.Informer].Name
-		pos[j].Name = userInfoMap[item.UserID].Name
-		pos[j].Phone = userInfoMap[item.UserID].Phone
-		pos[j].Avatar = userInfoMap[item.UserID].Avatar
+		// 检查 Informer 是否存在于 userInfoMap 中
+		if userInfoInformer, exists := userInfoMap[item.Informer]; exists {
+			pos[j].InformerName = userInfoInformer.Name
+		} else {
+			// 处理 Informer 信息不存在的情况
+			pos[j].InformerName = "用户已注销" // 设置默认值或其他处理逻辑
+			// 可选：记录日志
+			// log.Printf("No user info found for Informer: %v", item.Informer)
+		}
+
+		// 检查 UserID 是否存在于 userInfoMap 中
+		if userInfoUser, exists := userInfoMap[item.UserID]; exists {
+			pos[j].Name = userInfoUser.Name
+			pos[j].Phone = userInfoUser.Phone
+			pos[j].Avatar = userInfoUser.Avatar
+		} else {
+			// 处理 UserID 信息不存在的情况
+			pos[j].Name = "用户已注销" // 设置默认值或其他处理逻辑
+			pos[j].Phone = ""     // 设置默认值或其他处理逻辑
+			pos[j].Avatar = ""    // 设置默认值或其他处理逻辑
+			// 可选：记录日志
+			// log.Printf("No user info found for UserID: %v", item.UserID)
+		}
 	}
 	return pos, total, nil
 }
@@ -166,9 +185,25 @@ func (i *impl) ListAuditJob(ctx *gin.Context, req *response.Paging) ([]*audit.Au
 	}
 
 	for j, item := range pos {
-		pos[j].JobInfo = jobMap[item.JobID]
-		pos[j].InformerName = userInfoMap[item.Informer].Name
-		pos[j].Avatar = userInfoMap[item.Informer].Avatar
+		if jobInfo, exists := jobMap[item.JobID]; exists {
+			pos[j].JobInfo = jobInfo
+		} else {
+			// Handle the case where JobID is not found in jobMap
+			pos[j].JobInfo = nil // 或者设置一个默认值
+			// 可以记录日志或执行其他操作
+			// log.Printf("No job info found for JobID: %v", item.JobID)
+		}
+
+		if userInfo, exists := userInfoMap[item.Informer]; exists {
+			pos[j].InformerName = userInfo.Name
+			pos[j].Avatar = userInfo.Avatar
+		} else {
+			// Handle the case where Informer is not found in userInfoMap
+			pos[j].InformerName = "" // 或者设置一个默认值
+			pos[j].Avatar = ""       // 或者设置一个默认值
+			// 可以记录日志或执行其他操作
+			// log.Printf("No user info found for Informer: %v", item.Informer)
+		}
 	}
 	return pos, total, nil
 }

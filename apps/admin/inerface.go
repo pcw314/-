@@ -20,6 +20,7 @@ type Service interface {
 	DeleteMenu(ctx *gin.Context, id int) error
 	// ListArea 获取全部地区
 	ListArea(ctx *gin.Context, id string) ([]*Areas, error)
+	GetStatistics(ctx *gin.Context) (*Statistics, error)
 }
 
 type ServiceImpl struct{}
@@ -51,5 +52,9 @@ func (s *ServiceImpl) DeleteMenu(ctx *gin.Context, id int) error {
 }
 
 func (s *ServiceImpl) ListArea(ctx *gin.Context, id string) ([]*Areas, error) {
+	return nil, nil
+}
+
+func (s *ServiceImpl) GetStatistics(ctx *gin.Context) (*Statistics, error) {
 	return nil, nil
 }

@@ -78,7 +78,7 @@ func (Areas) TableName() string {
 type Menu struct {
 	ID       int     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
 	ParentID int     `gorm:"column:parent_id" json:"parent_id"`
-	Type     string  `gorm:"column:type" json:"type"` // 类型：menu 或 button
+	Type     int     `gorm:"column:type" json:"type"` // 类型：menu 或 button
 	Method   string  `gorm:"column:method" json:"method"`
 	Title    string  `gorm:"column:title" json:"title"` // 标题
 	Path     string  `gorm:"column:path" json:"path"`   // 路由路径
@@ -90,4 +90,20 @@ type Menu struct {
 
 func (Menu) TableName() string {
 	return "menus"
+}
+
+type Statistics struct {
+	ID               int      `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	StudentSum       int      `gorm:"column:student_sum" json:"student_sum"`
+	EnterpriseSum    int      `gorm:"column:enterprise_sum" json:"enterprise_sum"`
+	NewStudentSum    int      `gorm:"column:new_student_sum" json:"new_student_sum"`
+	NewEnterpriseSum int      `gorm:"column:new_enterprise_sum" json:"new_enterprise_sum"`
+	NewStudent       []int    `gorm:"-" json:"new_student"`
+	NewEnterprise    []int    `gorm:"-" json:"new_enterprise"`
+	NewJob           []int    `gorm:"-" json:"new_job"` //近七日新增兼职招聘信息数量
+	Date             []string `gorm:"-" json:"date"`
+}
+
+func (Statistics) TableName() string {
+	return "statistics"
 }

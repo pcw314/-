@@ -34,6 +34,7 @@ func (h *handler) RegisterRoute(r gin.IRouter) error {
 	r.POST("/login", h.Login)
 	r.Use(service.Security())
 	r.POST("/logout", h.Logout)
+	r.GET("/statistics", h.GetStatistics)
 	menu := r.Group("/menu")
 	menu.GET("/list", h.ListMenu)
 	menu.POST("", h.CreateMenu)

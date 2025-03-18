@@ -75,3 +75,16 @@ func (i *impl) ListArea(ctx *gin.Context, id string) ([]*admin.Areas, error) {
 
 	return tree, nil
 }
+
+func (i *impl) GetStatistics(ctx *gin.Context) (*admin.Statistics, error) {
+	var po admin.Statistics
+	err := i.mdb.Model(&admin.Statistics{}).First(&po).Error
+	if err != nil {
+		return nil, err
+	}
+	po.NewStudent = []int{5, 7, 10, 45, 55, 23, 67}
+	po.NewEnterprise = []int{6, 10, 22, 43, 9, 25, 32}
+	po.NewJob = []int{66, 75, 80, 34, 56, 67, 34}
+	po.Date = utils.GetRecentSevenDays()
+	return &po, nil
+}
