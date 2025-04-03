@@ -13,6 +13,7 @@ type Service interface {
 	CreateFile(ctx *gin.Context, file *File) error
 	// UploadFiles 文件上传
 	UploadFiles(ctx *gin.Context, files []*multipart.FileHeader) ([]File, error)
+	DeleteFile(ctx *gin.Context, id string) error
 }
 
 type ServiceImpl struct{}
@@ -25,4 +26,7 @@ func (s *ServiceImpl) CreateFile(ctx *gin.Context, file *File) error {
 }
 func (s *ServiceImpl) UploadFiles(ctx *gin.Context, files []*multipart.FileHeader) ([]File, error) {
 	return []File{}, nil
+}
+func (s *ServiceImpl) DeleteFile(ctx *gin.Context, id string) error {
+	return nil
 }

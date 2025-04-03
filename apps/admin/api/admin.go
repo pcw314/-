@@ -21,16 +21,20 @@ func (h *handler) Login(ctx *gin.Context) {
 		return
 	}
 	fmt.Println("req", req)
+	if len(req.Username) < 6 || len(req.Password) < 6 || len(req.Username) > 20 || len(req.Password) > 20 {
+		response.Error(ctx, result.DefaultError("请输入合规数据"))
+		return
+	}
 	user, err := h.svc.GetUser(ctx, &admin.LoginRequest{Username: req.Username, Role: req.Role})
 	if err != nil {
 		response.Error(ctx, result.DefaultError("用户名或密码错误"))
 		return
 	}
-	fmt.Println("user", user)
 	if user.Password == "" || !utils.BcryptCheck(req.Password, user.Password) {
 		response.Error(ctx, result.DefaultError("用户名或密码错误"))
 		return
 	}
+	_ = h.svc.SetUserUpdateAt(ctx, user.ID)
 	token, err := service.MakeToken(user.ID, user.Username, user.Role)
 	response.Success(ctx, result.NewCorrect("登录成功", token))
 }

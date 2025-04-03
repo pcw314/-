@@ -1,16 +1,19 @@
 package user
 
 import (
+	"fmt"
 	utils "gitee.com/xygfm/authorization/util"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID       int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
-	Username string `gorm:"colum:username" json:"username"`
-	Password string `gorm:"colum:password" json:"password"`
-	Role     int    `gorm:"colum:role" json:"role"`
-	State    int    `gorm:"colum:state" json:"state"`
+	ID        int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
+	Username  string `gorm:"colum:username" json:"username"`
+	Password  string `gorm:"colum:password" json:"password"`
+	Role      int    `gorm:"colum:role" json:"role"`
+	State     int    `gorm:"colum:state" json:"state"`
+	CreatedAt int64  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt int64  `gorm:"column:updated_at" json:"updated_at"`
 }
 
 func (User) TableName() string {
@@ -56,13 +59,13 @@ type Student struct {
 	UserID     int    `gorm:"column:user_id" json:"user_id"`
 	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
 	SchoolName string `gorm:"-" json:"school_name"`
-	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
-	CityID     int    `gorm:"column:city_id" json:"city_id"`
-	AreaID     int    `gorm:"column:area_id" json:"area_id"`
-	Avatar     string `gorm:"colum:avatar" json:"avatar"`
-	Username   string `gorm:"-" json:"username"`
-	Role       int    `gorm:"-" json:"role"`
-	State      int    `gorm:"_" json:"state"`
+	//ProvinceID int    `gorm:"column:province_id" json:"province_id"`
+	//CityID     int    `gorm:"column:city_id" json:"city_id"`
+	//AreaID     int    `gorm:"column:area_id" json:"area_id"`
+	Avatar   string `gorm:"colum:avatar" json:"avatar"`
+	Username string `gorm:"-" json:"username"`
+	Role     int    `gorm:"-" json:"role"`
+	State    int    `gorm:"_" json:"state"`
 }
 
 func (Student) TableName() string {
@@ -87,17 +90,17 @@ type Enterprise struct {
 	LegaPerson string `gorm:"column:lega_person" json:"lega_person"` //法定代表人
 	Phone      string `gorm:"column:phone" json:"phone"`
 	SchoolID   int    `gorm:"column:school_id" json:"school_id"`
-	SchoolName string `gorm:"-" json:"school_name"`
-	ProvinceID int    `gorm:"column:province_id" json:"province_id"`
-	CityID     int    `gorm:"column:city_id" json:"city_id"`
-	AreaID     int    `gorm:"column:area_id" json:"area_id"`
-	State      int    `gorm:"_" json:"state"`
-	CreatedAt  int64  `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt  int64  `gorm:"column:updated_at" json:"updated_at"`
-	UserID     int    `gorm:"column:user_id" json:"user_id"`
-	Username   string `gorm:"-" json:"username"`
-	Role       int    `gorm:"-" json:"role"`
 	Avatar     string `gorm:"colum:avatar" json:"avatar"`
+	SchoolName string `gorm:"-" json:"school_name"`
+	//ProvinceID int    `gorm:"column:province_id" json:"province_id"`
+	//CityID     int    `gorm:"column:city_id" json:"city_id"`
+	//AreaID     int    `gorm:"column:area_id" json:"area_id"`
+	State     int    `gorm:"_" json:"state"`
+	CreatedAt int64  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt int64  `gorm:"column:updated_at" json:"updated_at"`
+	UserID    int    `gorm:"column:user_id" json:"user_id"`
+	Username  string `gorm:"-" json:"username"`
+	Role      int    `gorm:"-" json:"role"`
 }
 
 func (Enterprise) TableName() string {
@@ -168,6 +171,8 @@ func (f *Enterprise) BeforeCreate(tx *gorm.DB) (err error) {
 
 // BeforeUpdate 在更新之前执行的函数
 func (f *Enterprise) BeforeUpdate(tx *gorm.DB) (err error) {
+	fmt.Println("===============")
+	fmt.Println(f.Avatar)
 	f.Avatar = utils.RemoveDomainName(f.Avatar)
 	return
 }

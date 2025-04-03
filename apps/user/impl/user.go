@@ -36,6 +36,7 @@ func (i *impl) Register(ctx *gin.Context, req *user.User) (*user.User, error) {
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("账号已存在")
 	}
+	req.CreatedAt = time.Now().UnixMilli()
 	err = i.mdb.Model(&user.User{}).Create(&req).Error
 	if err != nil {
 		fmt.Println("err", err)
@@ -349,6 +350,7 @@ func (i *impl) GetStudentByID(ctx *gin.Context, id int) (*user.Student, error) {
 }
 
 func (i *impl) UpdateStudent(ctx *gin.Context, student *user.Student) (*user.Student, error) {
+	student.Avatar = utils.RemoveDomainName(student.Avatar)
 	err := i.mdb.Model(&user.Student{}).
 		Where("id = ?", student.ID).
 		Updates(&student).Error
@@ -358,6 +360,7 @@ func (i *impl) UpdateStudent(ctx *gin.Context, student *user.Student) (*user.Stu
 	return student, nil
 }
 func (i *impl) UpdateEnterprise(ctx *gin.Context, enterprise *user.Enterprise) (*user.Enterprise, error) {
+	enterprise.Avatar = utils.RemoveDomainName(enterprise.Avatar)
 	err := i.mdb.Model(&user.Enterprise{}).
 		Where("id = ?", enterprise.ID).
 		Updates(&enterprise).Error
@@ -381,7 +384,7 @@ func (i *impl) UpdateStaff(ctx *gin.Context, req *user.CreatedStaff) (*user.Staf
 		Updates(map[string]interface{}{
 			"name":       req.Name,
 			"Phone":      req.Phone,
-			"avatar":     req.Avatar,
+			"avatar":     utils.RemoveDomainName(req.Avatar),
 			"updated_at": time.Now().UnixMilli(),
 		}).Error
 	if err != nil {
@@ -481,14 +484,20 @@ func (i *impl) UpdateUserState(ctx *gin.Context, id int) error {
 	if state == 1 {
 		err = i.mdb.Model(&user.User{}).
 			Where("id = ?", id).
-			Update("state", -1).Error
+			Updates(map[string]interface{}{
+				"state":      -1,
+				"updated_at": time.Now().UnixMilli(),
+			}).Error
 		if err != nil {
 			return err
 		}
 	} else if state == -1 {
 		err = i.mdb.Model(&user.User{}).
 			Where("id = ?", id).
-			Update("state", 1).Error
+			Updates(map[string]interface{}{
+				"state":      1,
+				"updated_at": time.Now().UnixMilli(),
+			}).Error
 		if err != nil {
 			return err
 		}

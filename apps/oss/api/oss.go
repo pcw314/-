@@ -61,3 +61,13 @@ func (h *handler) UploadFiles(c *gin.Context) {
 
 	response.Success(c, result.NewCorrect("上传成功", fileInfos))
 }
+
+func (h *handler) Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if err := h.svc.DeleteFile(ctx, id); err != nil {
+		response.Error(ctx, result.DefaultError(err.Error()))
+		return
+	}
+	response.Success(ctx, result.NewCorrect("删除成功", ""))
+
+}

@@ -72,7 +72,7 @@ func (i *impl) UpdateJob(ctx *gin.Context, req *position.Job) error {
 			"require":        req.Require,
 			"contact_name":   req.ContactName,
 			"contact_number": req.ContactNumber,
-			"state":          req.State,
+			"state":          0,
 			"updated_at":     time.Now().UnixMilli(),
 		})
 	return nil
@@ -153,7 +153,7 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 		db = db.Where("school_id = ?", schoolID)
 	}
 	if req.Search != "" {
-		db = db.Where("name LIKE ? OR post LIKE ?", "%"+req.Search+"%", "%"+req.Search+"%")
+		db = db.Where("post LIKE ? OR place like ?", "%"+req.Search+"%", "%"+req.Search+"%")
 	}
 	var total int64
 	err := db.Count(&total).Error
@@ -237,7 +237,9 @@ func (i *impl) ListAuditJob(ctx *gin.Context, req *position.AuditJobRequest) ([]
 	db := i.mdb.Model(&position.Job{}).
 		Where("state = ?", req.State)
 	if req.Search != "" {
-		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
+		db = db.Where("post LIKE ? OR place like ?",
+			"%"+req.Search+"%",
+			"%"+req.Search+"%")
 	}
 	var total int64
 	err := db.Count(&total).Error

@@ -5,6 +5,7 @@ import (
 	"gitee.com/xygfm/authorization/apps/admin"
 	utils "gitee.com/xygfm/authorization/util"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 func (i *impl) GetUser(ctx *gin.Context, req *admin.LoginRequest) (*admin.User, error) {
@@ -82,9 +83,141 @@ func (i *impl) GetStatistics(ctx *gin.Context) (*admin.Statistics, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	var roleCounts []admin.RoleCount
+
+	i.mdb.Model(&admin.User{}).
+		Select("role, COUNT(*) as count").
+		Group("role").
+		Find(&roleCounts)
+	// 遍历结果并赋值
+	for _, rc := range roleCounts {
+		if rc.Role == 1 {
+			po.StudentSum = int(rc.Count)
+		} else if rc.Role == 2 {
+			po.EnterpriseSum = int(rc.Count)
+		}
+	}
+
+	i.mdb.Model(&admin.User{}).
+		Select("role, COUNT(*) as count").
+		Where("created_at >= ?", time.Now().AddDate(0, 0, -7).UnixMilli()).
+		Group("role").
+		Find(&roleCounts)
+	for _, rc := range roleCounts {
+		if rc.Role == 1 {
+			po.NewStudentSum = int(rc.Count)
+		} else if rc.Role == 2 {
+			po.NewEnterpriseSum = int(rc.Count)
+		}
+	}
+	_, _ = i.getDailyJobCounts()
 	po.NewStudent = []int{5, 7, 10, 45, 55, 23, 67}
 	po.NewEnterprise = []int{6, 10, 22, 43, 9, 25, 32}
 	po.NewJob = []int{66, 75, 80, 34, 56, 67, 34}
 	po.Date = utils.GetRecentSevenDays()
 	return &po, nil
+}
+
+func (i *impl) SetUserUpdateAt(ctx *gin.Context, id int) error {
+	err := i.mdb.Model(&admin.User{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"update_at": time.Now().UnixMilli(),
+		}).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (i *impl) getDailyRegisterCounts() ([]admin.RegisterCount, error) {
+	var results []admin.RegisterCount
+
+	// 获取当前时间
+	now := time.Now()
+
+	// 计算7天前的时间
+	sevenDaysAgo := now.AddDate(0, 0, -7)
+
+	// 查询每一天的注册人数
+	if err := i.mdb.Table("users").
+		Select("FROM_UNIXTIME(created_at / 1000, '%Y-%m-%d') AS date, COUNT(*) AS count").
+		Where("created_at >= ?", sevenDaysAgo.UnixNano()/int64(time.Millisecond)).
+		Group("FROM_UNIXTIME(created_at / 1000, '%Y-%m-%d')").
+		Order("date ASC").
+		Find(&results).Error; err != nil {
+		return nil, err
+	}
+
+	// 确保结果包含所有7天的数据，即使某些天没有注册用户
+	allDates := make([]string, 7)
+	for i := 0; i < 7; i++ {
+		day := sevenDaysAgo.AddDate(0, 0, i)
+		allDates[i] = day.Format("2006-01-02")
+	}
+
+	// 补全缺失日期的注册人数为0
+	completeResults := make([]admin.RegisterCount, 7)
+	for i, date := range allDates {
+		found := false
+		for _, result := range results {
+			if result.Date == date {
+				completeResults[i] = result
+				found = true
+				break
+			}
+		}
+		if !found {
+			completeResults[i] = admin.RegisterCount{Date: date, Count: 0}
+		}
+	}
+	fmt.Println("completeResults", completeResults)
+
+	return completeResults, nil
+}
+
+func (i *impl) getDailyJobCounts() ([]admin.RegisterCount, error) {
+	var results []admin.RegisterCount
+
+	// 获取当前时间
+	now := time.Now()
+
+	// 计算7天前的时间
+	sevenDaysAgo := now.AddDate(0, 0, -7)
+
+	// 查询每一天的注册人数
+	if err := i.mdb.Table("jobs").
+		Select("FROM_UNIXTIME(created_at / 1000, '%Y-%m-%d') AS date, COUNT(*) AS count").
+		Where("created_at >= ?", sevenDaysAgo.UnixNano()/int64(time.Millisecond)).
+		Group("FROM_UNIXTIME(created_at / 1000, '%Y-%m-%d')").
+		Order("date ASC").
+		Find(&results).Error; err != nil {
+		return nil, err
+	}
+
+	// 确保结果包含所有7天的数据，即使某些天没有注册用户
+	allDates := make([]string, 7)
+	for i := 0; i < 7; i++ {
+		day := sevenDaysAgo.AddDate(0, 0, i)
+		allDates[i] = day.Format("2006-01-02")
+	}
+
+	// 补全缺失日期的注册人数为0
+	completeResults := make([]admin.RegisterCount, 7)
+	for i, date := range allDates {
+		found := false
+		for _, result := range results {
+			if result.Date == date {
+				completeResults[i] = result
+				found = true
+				break
+			}
+		}
+		if !found {
+			completeResults[i] = admin.RegisterCount{Date: date, Count: 0}
+		}
+	}
+	fmt.Println("completeResults", completeResults)
+
+	return completeResults, nil
 }

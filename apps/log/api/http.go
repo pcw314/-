@@ -1,7 +1,7 @@
 package api
 
 import (
-	"gitee.com/xygfm/authorization/apps/oss"
+	"gitee.com/xygfm/authorization/apps/log"
 	"gitee.com/xygfm/authorization/ioc"
 	"gitee.com/xygfm/authorization/middleware"
 	"github.com/gin-gonic/gin"
@@ -9,7 +9,7 @@ import (
 
 type handler struct {
 	ioc.ObjectImpl
-	svc oss.Service
+	svc log.Service
 }
 
 func init() {
@@ -20,21 +20,17 @@ func init() {
 }
 
 func (h *handler) Init() error {
-	h.svc = ioc.GetControllerObject(oss.AppName).(oss.Service)
+	h.svc = ioc.GetControllerObject(log.AppName).(log.Service)
 	return nil
 }
 
 func (h *handler) Name() string {
-	return oss.AppName
+	return log.AppName
 }
 
 func (h *handler) RegisterRoute(r gin.IRouter) error {
-	r.Use(service.LoggerMiddleware())
-	// 登录不进行任何中间件校验
-	r.Static("/uploads", "./storage/uploads")
 	r.Use(service.Security())
-	r.GET("/list", h.List)
-	r.POST("/upload", h.UploadFiles)
-	r.DELETE("/:id", h.Delete)
+	r.GET("/list", h.ListLog)
+	r.DELETE("/:id", h.DeleteLog)
 	return nil
 }

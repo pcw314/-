@@ -78,7 +78,7 @@ func (i *impl) UploadFiles(ctx *gin.Context, files []*multipart.FileHeader) ([]o
 		// 创建文件记录
 		fileInfo := oss.File{
 			Name:      strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename)), // 原始文件名
-			Path:      fileURL,                                                        // 保存路径
+			Path:      "/oss" + fileURL,                                               // 保存路径
 			Size:      strconv.FormatInt(file.Size, 10),                               // 文件大小
 			Type:      utils.GetFileType(file.Filename),                               // 文件类型
 			OwnerType: strconv.Itoa(utils.GetUserRole(ctx)),
@@ -94,4 +94,43 @@ func (i *impl) UploadFiles(ctx *gin.Context, files []*multipart.FileHeader) ([]o
 	}
 
 	return fileInfos, nil
+}
+
+func (i *impl) DeleteFile(ctx *gin.Context, fileID string) error {
+	// 从数据库获取文件信息
+	fileInfo, err := i.GetFileByID(ctx, fileID)
+	if err != nil {
+		return fmt.Errorf("无法找到文件: %v", err)
+	}
+
+	// 删除文件系统中的文件
+	filePath := filepath.Join("storage", fileInfo.Path[4:]) // 假设fileInfo.Path以"/oss/storage"开头
+	if err = os.Remove(filePath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("删除文件失败: %v", err)
+	}
+
+	// 从数据库中删除文件记录
+	if err = i.DeleteFileFromDB(ctx, fileID); err != nil {
+		return fmt.Errorf("从数据库删除文件记录失败: %v", err)
+	}
+
+	return nil
+}
+
+// GetFileByID 根据文件ID从数据库中获取文件信息
+func (i *impl) GetFileByID(ctx *gin.Context, fileID string) (*oss.File, error) {
+	var fileInfo oss.File
+	if err := i.mdb.Where("id = ?", fileID).First(&fileInfo).Error; err != nil {
+		return nil, err
+	}
+	fileInfo.Path = utils.RemoveDomainName(fileInfo.Path)
+	return &fileInfo, nil
+}
+
+// DeleteFileFromDB 根据文件ID从数据库中删除文件记录
+func (i *impl) DeleteFileFromDB(ctx *gin.Context, fileID string) error {
+	if err := i.mdb.Where("id = ?", fileID).Delete(&oss.File{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

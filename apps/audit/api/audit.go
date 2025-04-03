@@ -90,7 +90,7 @@ func (h *handler) CreateAuditJob(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	response.Success(ctx, result.NewCorrect("创建成功", ""))
+	response.Success(ctx, result.NewCorrect("举报成功", ""))
 	return
 }
 func (h *handler) CreateAuditUser(ctx *gin.Context) {
@@ -108,7 +108,7 @@ func (h *handler) CreateAuditUser(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	response.Success(ctx, result.NewCorrect("创建成功", ""))
+	response.Success(ctx, result.NewCorrect("举报成功", ""))
 	return
 }
 func (h *handler) UpdateAudit(ctx *gin.Context) {

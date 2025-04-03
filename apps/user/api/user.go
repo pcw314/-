@@ -145,6 +145,9 @@ func (h *handler) Register(ctx *gin.Context) {
 	if req.Username == "" || req.Password == "" || req.Role == 0 {
 		response.Error(ctx, result.DefaultError("缺少参数"))
 		return
+	} else if len(req.Username) < 6 || len(req.Password) < 6 || len(req.Username) > 20 || len(req.Password) > 20 {
+		response.Error(ctx, result.DefaultError("请将账号和密码控制在6-20位之间"))
+		return
 	} else {
 		req.Password = utils.BcryptHash(req.Password)
 	}
@@ -303,12 +306,12 @@ func (h *handler) UpdateStudent(ctx *gin.Context) {
 		return
 	}
 	student.ID = id
-	_, err = h.svc.UpdateStudent(ctx, student)
+	studentInfo, err := h.svc.UpdateStudent(ctx, student)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	response.Success(ctx, result.NewCorrect("修改成功", ""))
+	response.Success(ctx, result.NewCorrect("修改成功", studentInfo))
 }
 
 func (h *handler) UpdateEnterprise(ctx *gin.Context) {
@@ -320,12 +323,12 @@ func (h *handler) UpdateEnterprise(ctx *gin.Context) {
 		return
 	}
 	enterprise.ID = id
-	_, err = h.svc.UpdateEnterprise(ctx, enterprise)
+	enterpriseInfo, err := h.svc.UpdateEnterprise(ctx, enterprise)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	response.Success(ctx, result.NewCorrect("修改成功", ""))
+	response.Success(ctx, result.NewCorrect("修改成功", enterpriseInfo))
 }
 
 func (h *handler) UpdateStaff(ctx *gin.Context) {

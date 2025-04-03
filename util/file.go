@@ -65,18 +65,32 @@ func GetFileType(fileName string) string {
 
 // RemoveDomainName 删除前缀域名部分
 func RemoveDomainName(urlStr string) string {
-	// 解析URL
+	//// 解析URL
+	//parsedURL, err := url.Parse(urlStr)
+	//if err != nil {
+	//	return ""
+	//}
+	//// 获取域名部分
+	//domain := parsedURL.Hostname()
+	//// 判断协议类型
+	//protocol := "http"
+	//if parsedURL.Scheme == "https" {
+	//	protocol = "https"
+	//}
+	//// 截取域名后面的内容
+	//return strings.TrimPrefix(urlStr, protocol+"://"+domain)
+	// 解析 URL
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
 		return ""
 	}
-	// 获取域名部分
-	domain := parsedURL.Hostname()
-	// 判断协议类型
+	// 获取协议类型
 	protocol := "http"
 	if parsedURL.Scheme == "https" {
 		protocol = "https"
 	}
-	// 截取域名后面的内容
-	return strings.TrimPrefix(urlStr, protocol+"://"+domain)
+	// 获取完整的 Host（包括端口号，如果有的话）
+	host := parsedURL.Host
+	// 截取域名和端口号后面的内容
+	return strings.TrimPrefix(urlStr, protocol+"://"+host)
 }

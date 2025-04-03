@@ -6,6 +6,8 @@ import (
 	_ "gitee.com/xygfm/authorization/apps/admin/impl"
 	_ "gitee.com/xygfm/authorization/apps/audit/api"
 	_ "gitee.com/xygfm/authorization/apps/audit/impl"
+	_ "gitee.com/xygfm/authorization/apps/log/api"
+	_ "gitee.com/xygfm/authorization/apps/log/impl"
 	_ "gitee.com/xygfm/authorization/apps/message/api"
 	_ "gitee.com/xygfm/authorization/apps/message/impl"
 	_ "gitee.com/xygfm/authorization/apps/oss/api"

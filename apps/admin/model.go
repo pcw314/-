@@ -1,11 +1,10 @@
 package admin
 
 type User struct {
-	ID           int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
-	Username     string `gorm:"colum:username" json:"username"`
-	Password     string `gorm:"colum:password" json:"password"`
-	Role         int    `gorm:"colum:role" json:"role"`
-	HeadPortrait string `gorm:"colum:head_portrait" json:"head_portrait"`
+	ID       int    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"` // 唯一标识符
+	Username string `gorm:"colum:username" json:"username"`
+	Password string `gorm:"colum:password" json:"password"`
+	Role     int    `gorm:"colum:role" json:"role"`
 }
 
 func (User) TableName() string {
@@ -106,4 +105,14 @@ type Statistics struct {
 
 func (Statistics) TableName() string {
 	return "statistics"
+}
+
+type RoleCount struct {
+	Role  int
+	Count int64
+}
+
+type RegisterCount struct {
+	Date  string `gorm:"column:date"`
+	Count int64  `gorm:"column:count"`
 }

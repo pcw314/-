@@ -31,6 +31,75 @@ func (i *impl) ListAudit(ctx *gin.Context, req *response.Paging, userID int) ([]
 	if err != nil {
 		return nil, 0, err
 	}
+	var jobIDs []int
+	var userIds []int
+	for _, item := range pos {
+		userIds = append(userIds, item.UserID)
+		jobIDs = append(jobIDs, item.JobID)
+	}
+
+	var jobInfo []*user.Enterprise
+	jobInfoMap := make(map[int]*audit.UserInfo)
+	i.mdb.Model(&position.Job{}).Select("jobs.id as id, jobs.post as name, enterprises.phone as phone, enterprises.avatar as avatar").
+		Where("jobs.id in (?)", jobIDs).
+		Joins("JOIN enterprises ON enterprises.id = jobs.enterprise_id").
+		Find(&jobInfo)
+	for _, item := range jobInfo {
+		jobInfoMap[item.ID] = &audit.UserInfo{
+			Name:   item.Name,
+			Phone:  item.Phone,
+			Avatar: item.Avatar,
+		}
+	}
+
+	var enterprise []*user.Enterprise
+	err = i.mdb.Model(&user.Enterprise{}).
+		Where("user_id in (?)", userIds).
+		Find(&enterprise).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	userInfoMap := make(map[int]*audit.UserInfo)
+	for _, item := range enterprise {
+		userInfoMap[item.UserID] = &audit.UserInfo{
+			Name:   item.Name,
+			Phone:  item.Phone,
+			Avatar: item.Avatar,
+		}
+	}
+	var student []*user.Student
+	err = i.mdb.Model(&user.Student{}).
+		Where("user_id in (?)", userIds).
+		Find(&student).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, item := range student {
+		userInfoMap[item.UserID] = &audit.UserInfo{
+			Name:   item.Name,
+			Phone:  item.Phone,
+			Avatar: item.Avatar,
+		}
+	}
+	for j, item := range pos {
+		// 检查 UserID 是否存在于 userInfoMap 中
+		if userInfoUser, exists := userInfoMap[item.UserID]; exists {
+			pos[j].Name = userInfoUser.Name
+			pos[j].Phone = userInfoUser.Phone
+			pos[j].Avatar = userInfoUser.Avatar
+		} else {
+			if jobInfoUser, exists := jobInfoMap[item.JobID]; exists {
+				pos[j].Name = jobInfoUser.Name
+				pos[j].Phone = jobInfoUser.Phone
+				pos[j].Avatar = jobInfoUser.Avatar
+			} else {
+				// 处理 UserID 信息不存在的情况
+				pos[j].Name = "用户已注销" // 设置默认值或其他处理逻辑
+				pos[j].Phone = ""     // 设置默认值或其他处理逻辑
+				pos[j].Avatar = ""    // 设置默认值或其他处理逻辑
+			}
+		}
+	}
 	return pos, total, nil
 }
 func (i *impl) ListAuditUser(ctx *gin.Context, req *response.Paging) ([]*audit.Audit, int64, error) {
@@ -53,11 +122,13 @@ func (i *impl) ListAuditUser(ctx *gin.Context, req *response.Paging) ([]*audit.A
 	if err != nil {
 		return nil, 0, err
 	}
+
 	var userIds []int
 	for _, item := range pos {
 		userIds = append(userIds, item.Informer)
 		userIds = append(userIds, item.UserID)
 	}
+
 	var enterprise []*user.Enterprise
 	err = i.mdb.Model(&user.Enterprise{}).
 		Where("user_id in (?)", userIds).
@@ -215,7 +286,6 @@ func (i *impl) UpdateAudit(ctx *gin.Context, req *audit.Audit) error {
 			tx.Rollback()
 		}
 	}()
-
 	// 第一个更新操作
 	err := tx.Model(&audit.Audit{}).Where("id = ?", req.ID).
 		Updates(map[string]interface{}{
@@ -228,15 +298,18 @@ func (i *impl) UpdateAudit(ctx *gin.Context, req *audit.Audit) error {
 		tx.Rollback() // 如果出错，回滚事务
 		return err
 	}
-	// 第二个更新操作
-	err = tx.Model(&position.Job{}).Where("id = ?", req.JobID).Updates(map[string]interface{}{
-		"reply": req.Reply,
-		"state": -2,
-	}).Error
-	if err != nil {
-		tx.Rollback() // 如果出错，回滚事务
-		return err
+	if req.JobID != 0 && req.UserID == 0 {
+		// 第二个更新操作
+		err = tx.Model(&position.Job{}).Where("id = ?", req.JobID).Updates(map[string]interface{}{
+			"reply": req.Reply,
+			"state": -2,
+		}).Error
+		if err != nil {
+			tx.Rollback() // 如果出错，回滚事务
+			return err
+		}
 	}
+
 	// 提交事务
 	if err = tx.Commit().Error; err != nil {
 		return err

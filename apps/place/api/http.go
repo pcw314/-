@@ -29,6 +29,7 @@ func (h *handler) Name() string {
 }
 
 func (h *handler) RegisterRoute(r gin.IRouter) error {
+	r.Use(service.LoggerMiddleware())
 	r.Use(service.Security())
 	area := r.Group("/area")
 	area.PUT("/:id", h.UpdateArea)

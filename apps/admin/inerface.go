@@ -21,6 +21,7 @@ type Service interface {
 	// ListArea 获取全部地区
 	ListArea(ctx *gin.Context, id string) ([]*Areas, error)
 	GetStatistics(ctx *gin.Context) (*Statistics, error)
+	SetUserUpdateAt(ctx *gin.Context, id int) error
 }
 
 type ServiceImpl struct{}
@@ -57,4 +58,7 @@ func (s *ServiceImpl) ListArea(ctx *gin.Context, id string) ([]*Areas, error) {
 
 func (s *ServiceImpl) GetStatistics(ctx *gin.Context) (*Statistics, error) {
 	return nil, nil
+}
+func (s *ServiceImpl) SetUserUpdateAt(ctx *gin.Context, id int) error {
+	return nil
 }
