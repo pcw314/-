@@ -15,28 +15,27 @@ import (
 )
 
 func (h *handler) HandleWebSocket(c *gin.Context) {
-	convID, _ := c.GetQuery("conv_id")
+	//convID, _ := c.GetQuery("conv_id")
 	conn, err := message.Upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade failed:", err)
 		return
 	}
-
 	userID := utils.GetUserID(c) // 从认证获取用户ID
 	fmt.Println("userID:", userID)
 	message.Mutex.Lock()
 	// 检查并初始化会话对象
-	session, exists := message.Clients2[cast.ToUint(convID)]
-	if !exists {
-		session = &message.Session{
-			Connections: make(map[uint]*websocket.Conn),
-		}
-		message.Clients2[cast.ToUint(convID)] = session
-	}
+	//session, exists := message.Clients2[cast.ToUint(convID)]
+	//if !exists {
+	//	session = &message.Session{
+	//		Connections: make(map[uint]*websocket.Conn),
+	//	}
+	//	message.Clients2[cast.ToUint(convID)] = session
+	//}
 
 	// 将连接绑定到用户
-	session.Connections[cast.ToUint(userID)] = conn
-	//message.Clients[cast.ToUint(userID)] = conn
+	//session.Connections[cast.ToUint(userID)] = conn
+	message.Clients[cast.ToUint(userID)] = conn
 	message.Mutex.Unlock()
 
 	// 心跳检测
@@ -62,8 +61,8 @@ func (h *handler) HandleWebSocket(c *gin.Context) {
 			log.Println("Error reading message:", err)
 			// 清理连接
 			message.Mutex.Lock()
-			delete(message.Clients2[cast.ToUint(convID)].Connections, cast.ToUint(userID))
-			//delete(message.Clients, cast.ToUint(userID))
+			//delete(message.Clients2[cast.ToUint(convID)].Connections, cast.ToUint(userID))
+			delete(message.Clients, cast.ToUint(userID))
 			message.Mutex.Unlock()
 			conn.Close()
 			break
@@ -81,8 +80,8 @@ func (h *handler) HandleWebSocket(c *gin.Context) {
 		} else if messageType == websocket.CloseMessage {
 			log.Println("Connection closed by client")
 			message.Mutex.Lock()
-			delete(message.Clients2[cast.ToUint(convID)].Connections, cast.ToUint(userID))
-			//delete(message.Clients, cast.ToUint(userID))
+			//delete(message.Clients2[cast.ToUint(convID)].Connections, cast.ToUint(userID))
+			delete(message.Clients, cast.ToUint(userID))
 			message.Mutex.Unlock()
 			conn.Close()
 			break

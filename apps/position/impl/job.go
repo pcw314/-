@@ -149,6 +149,9 @@ func (i *impl) ListJobBySchoolID(ctx *gin.Context, req *response.Paging, schoolI
 	offset := (req.Page - 1) * limit
 	var pos []*position.Job
 	db := i.mdb.Model(&position.Job{})
+	if utils.GetUserRole(ctx) == 1 {
+		db = db.Where("state = 1")
+	}
 	if schoolID != 0 {
 		db = db.Where("school_id = ?", schoolID)
 	}

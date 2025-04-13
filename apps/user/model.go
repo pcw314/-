@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	utils "gitee.com/xygfm/authorization/util"
 	"gorm.io/gorm"
 )
@@ -171,8 +170,6 @@ func (f *Enterprise) BeforeCreate(tx *gorm.DB) (err error) {
 
 // BeforeUpdate 在更新之前执行的函数
 func (f *Enterprise) BeforeUpdate(tx *gorm.DB) (err error) {
-	fmt.Println("===============")
-	fmt.Println(f.Avatar)
 	f.Avatar = utils.RemoveDomainName(f.Avatar)
 	return
 }

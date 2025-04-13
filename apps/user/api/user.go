@@ -145,7 +145,7 @@ func (h *handler) Register(ctx *gin.Context) {
 	if req.Username == "" || req.Password == "" || req.Role == 0 {
 		response.Error(ctx, result.DefaultError("缺少参数"))
 		return
-	} else if len(req.Username) < 6 || len(req.Password) < 6 || len(req.Username) > 20 || len(req.Password) > 20 {
+	} else if len(req.Username) < 4 || len(req.Password) < 4 || len(req.Username) > 20 || len(req.Password) > 20 {
 		response.Error(ctx, result.DefaultError("请将账号和密码控制在6-20位之间"))
 		return
 	} else {
@@ -311,6 +311,11 @@ func (h *handler) UpdateStudent(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
+	api := utils.GetApiByType("file")
+	if studentInfo.Avatar != "" {
+		studentInfo.Avatar = api.Url + studentInfo.Avatar
+	}
+	studentInfo.Role = utils.GetUserRole(ctx)
 	response.Success(ctx, result.NewCorrect("修改成功", studentInfo))
 }
 
@@ -328,6 +333,11 @@ func (h *handler) UpdateEnterprise(ctx *gin.Context) {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
+	api := utils.GetApiByType("file")
+	if enterpriseInfo.Avatar != "" {
+		enterpriseInfo.Avatar = api.Url + enterpriseInfo.Avatar
+	}
+	enterpriseInfo.Role = utils.GetUserRole(ctx)
 	response.Success(ctx, result.NewCorrect("修改成功", enterpriseInfo))
 }
 
@@ -340,12 +350,17 @@ func (h *handler) UpdateStaff(ctx *gin.Context) {
 		return
 	}
 	staff.ID = id
-	_, err = h.svc.UpdateStaff(ctx, staff)
+	staffInfo, err := h.svc.UpdateStaff(ctx, staff)
 	if err != nil {
 		response.Error(ctx, result.DefaultError(err.Error()))
 		return
 	}
-	response.Success(ctx, result.NewCorrect("修改成功", ""))
+	api := utils.GetApiByType("file")
+	if staffInfo.Avatar != "" {
+		staffInfo.Avatar = api.Url + staffInfo.Avatar
+	}
+	staffInfo.Role = utils.GetUserRole(ctx)
+	response.Success(ctx, result.NewCorrect("修改成功", staffInfo))
 }
 
 func (h *handler) UpdatePassword(ctx *gin.Context) {

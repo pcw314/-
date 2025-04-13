@@ -11,7 +11,7 @@ func (i *impl) ListSchool(ctx *gin.Context, req *response.Paging, area int) ([]*
 	limit := req.Size
 	offset := (req.Page - 1) * limit
 	var school []*place.School
-	db := i.mdb.Model(&place.School{})
+	db := i.mdb.Model(&place.School{}).Where("state = 1")
 	if req.Search != "" {
 		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", req.Search))
 	}
@@ -76,6 +76,8 @@ func (i *impl) DeleteSchool(ctx *gin.Context, id int) error {
 }
 
 func (i *impl) ListHotSchool(ctx *gin.Context, req *response.Paging) ([]*place.School, error) {
+	req.Page = 1
+	req.Size = 10
 	limit := req.Size
 	offset := (req.Page - 1) * limit
 	var school []*place.School

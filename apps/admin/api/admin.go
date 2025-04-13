@@ -21,7 +21,7 @@ func (h *handler) Login(ctx *gin.Context) {
 		return
 	}
 	fmt.Println("req", req)
-	if len(req.Username) < 6 || len(req.Password) < 6 || len(req.Username) > 20 || len(req.Password) > 20 {
+	if len(req.Username) < 4 || len(req.Password) < 4 || len(req.Username) > 20 || len(req.Password) > 20 {
 		response.Error(ctx, result.DefaultError("请输入合规数据"))
 		return
 	}
@@ -32,6 +32,10 @@ func (h *handler) Login(ctx *gin.Context) {
 	}
 	if user.Password == "" || !utils.BcryptCheck(req.Password, user.Password) {
 		response.Error(ctx, result.DefaultError("用户名或密码错误"))
+		return
+	}
+	if user.State == -1 {
+		response.Error(ctx, result.DefaultError("用户状态异常"))
 		return
 	}
 	_ = h.svc.SetUserUpdateAt(ctx, user.ID)

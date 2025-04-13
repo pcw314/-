@@ -63,8 +63,8 @@ func (i *impl) HandleMessage(ctx *gin.Context, msg message.Message) int {
 
 	// 实时推送
 	message.Mutex.Lock()
-	receiverConn, ok := message.Clients2[uint(msg.ConvID)].Connections[uint(msg.ReceiverID)]
-	//receiverConn, ok := message.Clients[uint(msg.ReceiverID)]
+	//receiverConn, ok := message.Clients2[uint(msg.ConvID)].Connections[uint(msg.ReceiverID)]
+	receiverConn, ok := message.Clients[uint(msg.ReceiverID)]
 	message.Mutex.Unlock()
 
 	if ok {
@@ -75,8 +75,8 @@ func (i *impl) HandleMessage(ctx *gin.Context, msg message.Message) int {
 		if err != nil {
 			fmt.Println("向客户端发送消息失败:", err)
 			receiverConn.Close() // 关闭失败的连接
-			delete(message.Clients2[uint(msg.ConvID)].Connections, uint(msg.IsRead))
-			//delete(message.Clients, uint(msg.IsRead)) // 移除客户端
+			//delete(message.Clients2[uint(msg.ConvID)].Connections, uint(msg.IsRead))
+			delete(message.Clients, uint(msg.IsRead)) // 移除客户端
 			return 0
 		}
 		i.mdb.Model(&message.Message{}).Where("id = ?", mess.ID).Updates(map[string]interface{}{
@@ -148,9 +148,14 @@ func (i *impl) ListMessages(ctx *gin.Context, req *response.Paging, studentID in
 		db = db.Limit(limit).Offset(offset)
 	}
 	err = db.Order("created_at desc").Find(&pos).Error
+	reverseMessages(pos)
 	return pos, total, nil
 }
-
+func reverseMessages(messages []*message.Message) {
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
+	}
+}
 func (i *impl) ReadMessage(ctx *gin.Context, convID int, sender int) error {
 	err := i.mdb.Model(&message.Message{}).
 		Where("conv_id = ?", convID).

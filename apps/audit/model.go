@@ -3,6 +3,7 @@ package audit
 import (
 	utils "gitee.com/xygfm/authorization/util"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type Audit struct {
@@ -62,21 +63,66 @@ type Job struct {
 
 // BeforeCreate 在创建之前执行的函数
 func (f *Audit) BeforeCreate(tx *gorm.DB) (err error) {
-	f.Image = utils.RemoveDomainName(f.Image)
+	if f.Image == "" {
+		return nil
+	}
+
+	// 将图片 URL 按逗号分隔成数组
+	imageURLs := strings.Split(f.Image, ",")
+
+	// 创建一个新的切片，用于存储有效的图片 URL
+	var validImageURLs []string
+
+	// 遍历每个图片 URL，移除域名部分并过滤掉空字符串
+	for _, imageURL := range imageURLs {
+		trimmedURL := strings.TrimSpace(imageURL) // 去除前后空格
+		if trimmedURL != "" {                     // 过滤掉空字符串
+			validImageURLs = append(validImageURLs, utils.RemoveDomainName(trimmedURL))
+		}
+	}
+
+	// 将处理后的图片 URL 重新拼接成字符串
+	f.Image = strings.Join(validImageURLs, ",")
 	return
 }
 
 // BeforeUpdate 在更新之前执行的函数
 func (f *Audit) BeforeUpdate(tx *gorm.DB) (err error) {
-	f.Image = utils.RemoveDomainName(f.Image)
+	if f.Image == "" {
+		return nil
+	}
+
+	// 将图片 URL 按逗号分隔成数组
+	imageURLs := strings.Split(f.Image, ",")
+
+	// 创建一个新的切片，用于存储有效的图片 URL
+	var validImageURLs []string
+
+	// 遍历每个图片 URL，移除域名部分并过滤掉空字符串
+	for _, imageURL := range imageURLs {
+		trimmedURL := strings.TrimSpace(imageURL) // 去除前后空格
+		if trimmedURL != "" {                     // 过滤掉空字符串
+			validImageURLs = append(validImageURLs, utils.RemoveDomainName(trimmedURL))
+		}
+	}
+
+	// 将处理后的图片 URL 重新拼接成字符串
+	f.Image = strings.Join(validImageURLs, ",")
 	return
 }
 
 // AfterFind 在查询之后执行的函数
 func (f *Audit) AfterFind(tx *gorm.DB) (err error) {
 	api := utils.GetApiByType("file")
-	if f.Image != "" {
-		f.Image = api.Url + f.Image
+	if f.Image == "" {
+		return nil
 	}
+	imageURLs := strings.Split(f.Image, ",")
+
+	for i, imageURL := range imageURLs {
+		imageURLs[i] = api.Url + strings.TrimSpace(imageURL)
+	}
+	f.Image = strings.Join(imageURLs, ",")
+
 	return
 }

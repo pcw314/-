@@ -37,6 +37,7 @@ func (i *impl) Register(ctx *gin.Context, req *user.User) (*user.User, error) {
 		return nil, errors.New("账号已存在")
 	}
 	req.CreatedAt = time.Now().UnixMilli()
+	req.UpdatedAt = time.Now().UnixMilli()
 	err = i.mdb.Model(&user.User{}).Create(&req).Error
 	if err != nil {
 		fmt.Println("err", err)
@@ -390,7 +391,9 @@ func (i *impl) UpdateStaff(ctx *gin.Context, req *user.CreatedStaff) (*user.Staf
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+	var staff *user.StaffReply
+	i.mdb.Model(&user.Staff{}).Where("id = ?", req.ID).Find(&staff)
+	return staff, nil
 }
 
 func (i *impl) UpdatePassword(ctx *gin.Context, id int, nowPassword, oldPassword string) error {
