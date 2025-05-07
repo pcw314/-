@@ -80,10 +80,10 @@ func (i *impl) ListArea(ctx *gin.Context, id string) ([]*admin.Areas, error) {
 
 func (i *impl) GetStatistics(ctx *gin.Context) (*admin.Statistics, error) {
 	var po admin.Statistics
-	err := i.mdb.Model(&admin.Statistics{}).First(&po).Error
-	if err != nil {
-		return nil, err
-	}
+	//err := i.mdb.Model(&admin.Statistics{}).First(&po).Error
+	//if err != nil {
+	//	return nil, err
+	//}
 	var roleCounts []admin.RoleCount
 	i.mdb.Model(&admin.User{}).
 		Select("role, COUNT(*) as count").

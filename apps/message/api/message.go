@@ -39,7 +39,7 @@ func (h *handler) HandleWebSocket(c *gin.Context) {
 	message.Mutex.Unlock()
 
 	// 心跳检测
-	//go h.handleHeartbeat(conn)
+	go h.handleHeartbeat(conn)
 
 	//for {
 	//	var msg message.Message

@@ -33,25 +33,16 @@ func (h *handler) List(ctx *gin.Context) {
 func (h *handler) UploadFiles(c *gin.Context) {
 	// 获取上传的文件
 	form, err := c.MultipartForm()
-	fmt.Println("=============")
-	fmt.Println(form)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("11111111111")
 		response.Error(c, result.DefaultError("获取文件失败"))
 		return
 	}
 	files := form.File["files"]
-
 	// 检查文件数量
 	if len(files) == 0 {
-		fmt.Println(err)
-		fmt.Println("2222222222222222")
 		response.Error(c, result.DefaultError("请选择文件"))
 		return
 	}
-
-	fmt.Println("111-----------------1111")
 	// 调用服务层处理文件上传
 	fileInfos, err := h.svc.UploadFiles(c, files)
 	if err != nil {
