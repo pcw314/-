@@ -1,0 +1,114 @@
+{
+  "id": "4658275",
+  "name": "newStoreAdmin",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "30019546",
+      "name": "arrow-up",
+      "font_class": "arrow-up",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "25624556",
+      "name": "majesticons_2home",
+      "font_class": "majesticons_2home",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "16760771",
+      "name": "gesture-swipe-vertical",
+      "font_class": "gesture-swipe-vertical",
+      "unicode": "f834",
+      "unicode_decimal": 63540
+    },
+    {
+      "icon_id": "5387553",
+      "name": "搜索",
+      "font_class": "sousuo",
+      "unicode": "eafe",
+      "unicode_decimal": 60158
+    },
+    {
+      "icon_id": "2076340",
+      "name": "刷新",
+      "font_class": "shuaxin",
+      "unicode": "e8aa",
+      "unicode_decimal": 59562
+    },
+    {
+      "icon_id": "41762083",
+      "name": "刷新-copy",
+      "font_class": "shuaxin-copy",
+      "unicode": "ebec",
+      "unicode_decimal": 60396
+    },
+    {
+      "icon_id": "11372693",
+      "name": "删除",
+      "font_class": "shanchu",
+      "unicode": "e8b6",
+      "unicode_decimal": 59574
+    },
+    {
+      "icon_id": "41762121",
+      "name": "删除-copy",
+      "font_class": "shanchu-copy",
+      "unicode": "ebed",
+      "unicode_decimal": 60397
+    },
+    {
+      "icon_id": "6360743",
+      "name": "moon",
+      "font_class": "moon",
+      "unicode": "e65c",
+      "unicode_decimal": 58972
+    },
+    {
+      "icon_id": "6988251",
+      "name": "wb-sunny",
+      "font_class": "wb-sunny",
+      "unicode": "ebeb",
+      "unicode_decimal": 60395
+    },
+    {
+      "icon_id": "577313",
+      "name": "加号1",
+      "font_class": "jiahao1",
+      "unicode": "e727",
+      "unicode_decimal": 59175
+    },
+    {
+      "icon_id": "3704904",
+      "name": "not-found",
+      "font_class": "not-found",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "2142812",
+      "name": "exit",
+      "font_class": "exit",
+      "unicode": "e69a",
+      "unicode_decimal": 59034
+    },
+    {
+      "icon_id": "15838547",
+      "name": "user",
+      "font_class": "user",
+      "unicode": "e682",
+      "unicode_decimal": 59010
+    },
+    {
+      "icon_id": "31433688",
+      "name": "面包屑",
+      "font_class": "mianbaoxie",
+      "unicode": "e72f",
+      "unicode_decimal": 59183
+    }
+  ]
+}

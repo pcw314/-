@@ -1,0 +1,53 @@
+{
+  "name": "new-superadmin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@types/qs": "^6.9.15",
+    "@vue/babel-helper-vue-jsx-merge-props": "^1.4.0",
+    "@vue/babel-preset-jsx": "^1.4.0",
+    "axios": "^1.7.4",
+    "echarts": "^5.6.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "new-superadmin": "file:",
+    "nprogress": "^0.2.0",
+    "persist": "^0.2.7",
+    "pinia": "^2.2.2",
+    "pinia-plugin-persistedstate": "^3.2.1",
+    "qs": "^6.13.0",
+    "socket.io-client": "^4.8.1",
+    "tsx": "^4.19.3",
+    "vue": "^3.4.37",
+    "vue-router": "^4.4.3",
+    "vue-socket.io": "^3.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.2",
+    "@types/nprogress": "^0.2.3",
+    "@types/vue": "^2.0.0",
+    "@vitejs/plugin-vue": "^5.1.2",
+    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "@vue/babel-plugin-jsx": "^1.2.5",
+    "dart-sass": "^1.25.0",
+    "element-plus": "^2.8.0",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "sass": "^1.77.8",
+    "typescript": "^5.5.3",
+    "unocss": "^0.62.2",
+    "vite": "^5.4.1",
+    "vue-tsc": "^2.0.29"
+  },
+  "script": {
+    "lint": "eslint src --fix --ext .ts,.tsx,.vue,.js,.jsx",
+    "prettier": "prettier --writecls"
+  }
+}
